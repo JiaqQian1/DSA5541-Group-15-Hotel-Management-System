@@ -1,4 +1,4 @@
-	#include<iostream>
+	        #include<iostream>
 		#include<fstream>
 		#include<cstring>
 		#include<iomanip>
@@ -25,7 +25,8 @@
 				{
 					cout << "Hotel object is being destroyed." <<endl;
 				}
-				void logIn()
+				
+			void logIn()
 		{
 		    string staffID;
 		    string staffPassword;
@@ -93,10 +94,10 @@
 		
 		    } while (count < 3);
 		}
-						void mainPage();
-						void changePassword();
-						friend class Room;
-						friend class Customer;
+			void mainPage();
+			void changePassword();
+			friend class Room;
+			friend class Customer;
 		
 		}H;
 		
@@ -117,6 +118,9 @@
 				void checkOut();
 				void oldRecord();
 				void feedback();
+				void dineReserve();
+				void viewDineMenu();
+				void addReservation();
 		}R;
 		class Customer:public Hotel
 		{
@@ -484,6 +488,160 @@
 	    }
 	}
 	
+	void Room::dineReserve()
+	{
+		int choice;
+	    system("cls");
+	    cout<< "========================================================" << endl;
+	    cout<< "===========WELCOME TO DOCTOR STRANGE RESTAURANT========="<<endl;
+	    cout<< "====================DINE RESERVE========================" << endl;
+	    cout<< "====OPEN TIME MONDAY-FRIDAY 7:00a.m. to 10:00p.m. ======" << endl;
+	    cout<< "====OPEN TIME SATURDAY-SUNDAY 7:00a.m. to 10:00p.m. ====" << endl;
+	    cout<< "========================================================" << endl;
+	    cout<< "[1] VIEW DINE MENU" << endl;
+	    cout<< "[2] TABLE RESERVATION" << endl;
+	    cout<< "[3] CANCEL RESERVATION" << endl;
+	    cout<< "[4] RESERVATION RECORD" << endl;
+	    cout<< "[5] EXIT"<<endl;
+	    cout<< "\nEnter your choice: ";
+	    cin>>choice;
+	    
+	    switch(choice)
+	    {
+	    	case 1: R.viewDineMenu();
+	    	        break;
+	    	case 2: R.addReservation();
+			        break; 
+			case 5: H.mainPage();
+		}
+	}
+	
+	void Room::viewDineMenu()
+	{
+		int choice;
+		char goBack;
+		system("cls");
+		cout<<"================================================="<<endl;
+		cout<<"==========DOCTOR STRANGE RESTAURANT MENU========="<<endl;
+		cout<<"================================================="<<endl;
+		cout<<"[1] FOOD"<<endl;
+		cout<<"[2] BEVERAGE"<<endl;
+		cout<<"[3] EXIT"<<endl;
+		cout<<"\nWhat you would like view? ";
+		cin>>choice; 
+		
+		switch(choice)
+		{
+			case 1: system("cls");
+					cout << "======================================" << endl;
+			        cout << "================FOOD==================" << endl;
+			        cout << "======================================" << endl;
+			        cout << "NO.\t NAME \t\t     PRICE(RM) " << endl;
+			        cout << "1\t NASI LEMAK\t\t8.00" << endl;
+			        cout << "2\t MEE SIAM\t\t 7.50" << endl;
+			        cout << "3\t CHICKEN RICE\t\t9.00" << endl;
+			        cout << "4\t ROTI CANAI\t\t 6.50" << endl;
+			        cout << "5\t CURRY MEE\t\t 8.50" << endl;
+			        cout << "6\t HAINANESE CHICKEN RICE\t 10.00" << endl;
+			        cout << "7\t NASI GORENG\t\t 9.00" << endl;
+			        cout << "8\t CHAR KWAY TEOW\t\t 7.00" << endl;
+			        cout << "9\t SATAY\t\t\t 12.00" << endl;
+			        cout << "10\t DIM SUM\t\t 9.50" << endl;
+			        cout << "11\t PIZZA\t\t\t 15.00" << endl;
+			        cout << "12\t BURGER\t\t\t 10.00" << endl;
+			        cout << "13\t SUSHI\t\t\t 11.50" << endl;
+			        cout << "14\t FRIED CHICKEN\t\t 8.50" << endl;
+			        cout << "15\t STEAK\t\t\t 20.00" << endl;
+			        cout << "16\t PASTA\t\t\t 12.00" << endl;
+			        cout << "17\t RAMEN\t\t\t 9.00" << endl;
+			        cout << "18\t SANDWICH\t\t 6.50" << endl;
+			         cout << "\nEnter Y to go back: ";
+				    cin >> goBack;
+				    
+				    if(goBack == 'y' || goBack == 'Y')
+				    {
+				        viewDineMenu();
+				    }
+			        break;
+			        
+		case 2: system("cls");
+				cout << "======================================" << endl;
+	            cout << "===============BEVERAGE===============" << endl;
+	            cout << "======================================" << endl;
+	            cout << "NO.\t NAME \t\t    PRICE(RM) " << endl;
+	            cout << "1\t Iced Coffee\t\t5.00" << endl;
+	            cout << "2\t Lemonade\t\t 4.50" << endl;
+	            cout << "3\t Milkshake\t\t 6.00" << endl;
+	            cout << "4\t Green Tea\t\t 3.50" << endl;
+	            cout << "5\t Orange Juice\t\t4.00" << endl;
+	            cout << "6\t Hot Chocolate\t\t5.50" << endl;
+	            cout << "7\t Mojito\t\t\t8.00" << endl;
+	            cout << "8\t Fruit Punch\t\t 6.50" << endl;
+	            cout << "9\t Strawberry Shake\t 5.50" << endl;
+	            cout << "10\t Cappuccino\t\t 4.00" << endl;
+	            cout << "11\t Mango Lassi\t\t 4.50" << endl;
+	            cout << "12\t Thai Iced Tea\t\t 3.50" << endl;
+	             cout << "\nEnter Y to go back: ";
+			    cin >> goBack;
+			    
+			    if(goBack == 'y' || goBack == 'Y')
+			    {
+			        R.viewDineMenu();
+			    }
+	            break;
+	            
+	    case 3: dineReserve();
+	            break;
+	            
+	    default: cout << "Invalid choice!" << endl;
+	             cout<<"\nWhat you would like view? ";
+				 cin>>choice; 
+		}
+	}
+	
+	void Room::addReservation() 
+	{
+     ofstream recordFile("record.txt", ios::app);
+    ofstream reservationFile("reservation.txt", ios::app);
+
+    if (!recordFile || !reservationFile) {
+        cout << "Error opening files." << endl;
+        return;
+    }
+
+    int roomNumber;
+    string name, date, time;
+    int guests;
+
+    cout << "Enter Room Number: ";
+    cin >> roomNumber;
+
+    cout << "Enter Name: ";
+    cin.ignore(); // Ignore the newline character left in the input buffer
+    getline(cin, name);
+
+    cout << "Enter Date: ";
+    getline(cin, date);
+
+    cout << "Enter Time: ";
+    getline(cin, time);
+
+    cout << "Enter Number of Guests: ";
+    cin >> guests;
+
+    // Write to record.txt
+    recordFile << roomNumber << " " << name << " " << date << " " << time << " " << guests << endl;
+
+    // Write to reservation.txt
+    reservationFile << roomNumber << " " << name << " " << date << " " << time << " " << guests << endl;
+
+    recordFile.close();
+    reservationFile.close();
+
+    cout << "Reservation added successfully!" << endl;
+	}
+
+	
 	void Room::checkOut()
 	{
 	    system("cls");
@@ -773,12 +931,13 @@
 				    cout<<"[3] VIEW ROOM INFORMATION"<<endl;
 				    cout<<"[4] VIEW CUSTOMER INFORMATION"<<endl;
 				    cout<<"[5] UPDATE CUSTOMER INFORMATION"<<endl;
-				    cout<<"[6] VIEW ROOM AVAILABLE"<<endl;
-				    cout<<"[7] CHECK OUT INFORMATION"<<endl;
-				    cout<<"[8] VIEW OLD RECORD"<<endl;
-				    cout<<"[9] CHANGE STAFF PASSWORD"<<endl;
-				    cout<<"[10] CUSTOMER FEEDBACK"<<endl;
-				    cout<<"[11] EXIT"<<endl;
+				    cout<<"[6] DINE RESERVE "<<endl;
+				    cout<<"[7] VIEW ROOM AVAILABLE"<<endl;
+				    cout<<"[8] CHECK OUT INFORMATION"<<endl;
+				    cout<<"[9] VIEW OLD RECORD"<<endl;
+				    cout<<"[10] CHANGE STAFF PASSWORD"<<endl;
+				    cout<<"[11] CUSTOMER FEEDBACK"<<endl;
+				    cout<<"[12] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
 				    cin>>Ht.choice;
 				    cin.ignore();
@@ -801,17 +960,19 @@
 						         break; 
 						case 5: C.updateCustomer();
 						        break;
-	       				case 6:R.viewRoomStatus();
+						 case 6: R.dineReserve(); 
+                				break;
+	       				case 7:R.viewRoomStatus();
 		                       break;   
-						case 7: R.checkOut();
+						case 8: R.checkOut();
 						        break;
-						case 8: R.oldRecord();
+						case 9: R.oldRecord();
 						        break;
-						case 9: R.changePassword();
+						case 10: R.changePassword();
 						         break;
-						case 10: R.feedback();
+						case 11: R.feedback();
 						         break;
-						case 11:
+						case 12:
 								 system("cls");
 								 cout << "***********************************************************************" << endl;
 							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
