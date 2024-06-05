@@ -1,4 +1,4 @@
-	        #include<iostream>
+	    #include<iostream>
 		#include<fstream>
 		#include<cstring>
 		#include<iomanip>
@@ -121,6 +121,7 @@
 				void dineReserve();
 				void viewDineMenu();
 				void addReservation();
+				void searchCustomer();
 		}R;
 		class Customer:public Hotel
 		{
@@ -919,81 +920,164 @@
 	        mainPage(); 
 	    }
 	}
-		
-		void Hotel::mainPage()
-		{
-		            system("cls");
-				    cout <<"*******************************************************"<< endl;
-				    cout<<"===WELCOME TO DOCTER STRANGE HOTEL MANAGEMENT SYSTEM===="<<endl;
-				    cout <<"*******************************************************"<< endl;
-				    cout<<"[1] ADD NEW BOOKING"<<endl;
-				    cout<<"[2] BILL"<<endl;
-				    cout<<"[3] VIEW ROOM INFORMATION"<<endl;
-				    cout<<"[4] VIEW CUSTOMER INFORMATION"<<endl;
-				    cout<<"[5] UPDATE CUSTOMER INFORMATION"<<endl;
-				    cout<<"[6] DINE RESERVE "<<endl;
-				    cout<<"[7] VIEW ROOM AVAILABLE"<<endl;
-				    cout<<"[8] CHECK OUT INFORMATION"<<endl;
-				    cout<<"[9] VIEW OLD RECORD"<<endl;
-				    cout<<"[10] CHANGE STAFF PASSWORD"<<endl;
-				    cout<<"[11] CUSTOMER FEEDBACK"<<endl;
-				    cout<<"[12] EXIT"<<endl;
-				    cout<<"\nEnter your choice: ";
-				    cin>>Ht.choice;
-				    cin.ignore();
-				    switch(Ht.choice)
-					{
-					    case 1: R.newBooking();
-					    	    break;
-					    case 2: system("cls");
-					            cout<<"*************************************************"<<endl;
-					            cout<<"===================BILL========================="<<endl;
-					            cout<<"*************************************************"<<endl;
-						          int roomNumber;
-						          cout<<"Enter Room Number to View Bill: ";
-						          cin>> roomNumber;
-						          R.calcBill(roomNumber);
-						          break;
-					    case 3: R.roomInfo();
-					            break;
-						case 4: C.cusInfo();
-						         break; 
-						case 5: C.updateCustomer();
-						        break;
-						 case 6: R.dineReserve(); 
-                				break;
-	       				case 7:R.viewRoomStatus();
-		                       break;   
-						case 8: R.checkOut();
-						        break;
-						case 9: R.oldRecord();
-						        break;
-						case 10: R.changePassword();
-						         break;
-						case 11: R.feedback();
-						         break;
-						case 12:
-								 system("cls");
-								 cout << "***********************************************************************" << endl;
-							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
-							    cout << "***********************************************************************" << endl;
-								 H.logIn();
-								 Ht.password.clear();
-								 H.mainPage();
-						         break;
-					}
-		}
-		int main()
-		{
-			Hotel *H = new Hotel();
-			int choice;
-			system("color 5f");
-			cout << "***********************************************************************" << endl;
-			cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
-			cout << "***********************************************************************" << endl;
-		    H->logIn();
-		    H->mainPage();
-		    delete H;
-			return 0;
-		}
+		void Room::searchCustomer() {
+    system("cls");
+    cout << "**************************************************************" << endl;
+    cout << "========================SEARCH CUSTOMER========================" << endl;
+    cout << "**************************************************************" << endl;
+    
+    cout << "[1] Search by Name" << endl;
+    cout << "[2] Search by Room Number" << endl;
+    cout << "Enter your choice: ";
+    int choice;
+    cin >> choice;
+    cin.ignore();
 
+    if (choice == 1) {
+        cout << "Enter Customer Name: ";
+        string name;
+        getline(cin, name);
+
+        ifstream recordFile("record.txt");
+        if (!recordFile) {
+            cout << "Error opening the record file." << endl;
+            return;
+        }
+
+        bool found = false;
+        int roomNumber, day;
+        string CUSNAME, CHECKIN, MOBILE, EMAIL;
+        
+        while (recordFile >> roomNumber >> CUSNAME >> CHECKIN >> day >> MOBILE >> EMAIL) {
+            if (CUSNAME.find(name) != string::npos) {
+                found = true;
+                cout << "Room Number: " << roomNumber << "\nCustomer Name: " << CUSNAME 
+                     << "\nCheck-In Date: " << CHECKIN << "\nNumber of Days: " << day 
+                     << "\nMobile Number: " << MOBILE << "\nEmail: " << EMAIL << endl;
+            }
+        }
+
+        if (!found) {
+            cout << "Customer not found." << endl;
+        }
+
+        recordFile.close();
+
+    } else if (choice == 2) {
+        cout << "Enter Room Number: ";
+        int roomNumber;
+        cin >> roomNumber;
+
+        ifstream recordFile("record.txt");
+        if (!recordFile) {
+            cout << "Error opening the record file." << endl;
+            return;
+        }
+
+        bool found = false;
+        int existingRoomNum, day;
+        string CUSNAME, CHECKIN, MOBILE, EMAIL;
+        
+        while (recordFile >> existingRoomNum >> CUSNAME >> CHECKIN >> day >> MOBILE >> EMAIL) {
+            if (existingRoomNum == roomNumber) {
+                found = true;
+                cout << "Room Number: " << existingRoomNum << "\nCustomer Name: " << CUSNAME 
+                     << "\nCheck-In Date: " << CHECKIN << "\nNumber of Days: " << day 
+                     << "\nMobile Number: " << MOBILE << "\nEmail: " << EMAIL << endl;
+            }
+        }
+
+        if (!found) {
+            cout << "Customer not found." << endl;
+        }
+
+        recordFile.close();
+
+    } else {
+        cout << "Invalid choice!" << endl;
+    }
+
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin >> Ht.back;
+
+    if (Ht.back == 'Y' || Ht.back == 'y') {
+        H.mainPage();
+    }
+}
+void Hotel::mainPage() {
+    system("cls");
+    cout <<"*******************************************************"<< endl;
+    cout<<"===WELCOME TO DOCTER STRANGE HOTEL MANAGEMENT SYSTEM===="<<endl;
+    cout <<"*******************************************************"<< endl;
+    cout<<"[1] ADD NEW BOOKING"<<endl;
+    cout<<"[2] BILL"<<endl;
+    cout<<"[3] VIEW ROOM INFORMATION"<<endl;
+    cout<<"[4] VIEW CUSTOMER INFORMATION"<<endl;
+    cout<<"[5] UPDATE CUSTOMER INFORMATION"<<endl;
+    cout<<"[6] DINE RESERVE "<<endl;
+    cout<<"[7] VIEW ROOM AVAILABLE"<<endl;
+    cout<<"[8] CHECK OUT INFORMATION"<<endl;
+    cout<<"[9] VIEW OLD RECORD"<<endl;
+    cout<<"[10] CHANGE STAFF PASSWORD"<<endl;
+    cout<<"[11] CUSTOMER FEEDBACK"<<endl;
+    cout<<"[12] SEARCH CUSTOMER"<<endl;
+    cout<<"[13] EXIT"<<endl;
+    cout<<"\nEnter your choice: ";
+    cin>>Ht.choice;
+    cin.ignore();
+    switch(Ht.choice)
+    {
+        case 1: R.newBooking();
+                break;
+        case 2: system("cls");
+                cout<<"*************************************************"<<endl;
+                cout<<"===================BILL========================="<<endl;
+                cout<<"*************************************************"<<endl;
+                int roomNumber;
+                cout<<"Enter Room Number to View Bill: ";
+                cin>> roomNumber;
+                R.calcBill(roomNumber);
+                break;
+        case 3: R.roomInfo();
+                break;
+        case 4: C.cusInfo();
+                break; 
+        case 5: C.updateCustomer();
+                break;
+        case 6: R.dineReserve(); 
+                break;
+        case 7:R.viewRoomStatus();
+                break;   
+        case 8: R.checkOut();
+                break;
+        case 9: R.oldRecord();
+                break;
+        case 10: R.changePassword();
+                break;
+        case 11: R.feedback();
+                break;
+        case 12: R.searchCustomer();
+                break;
+        case 13: 
+                system("cls");
+                cout << "***********************************************************************" << endl;
+                cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
+                cout << "***********************************************************************" << endl;
+                H.logIn();
+                Ht.password.clear();
+                H.mainPage();
+                break;
+    }
+}
+int main() {
+    Hotel *H = new Hotel();
+    int choice;
+    system("color 5f");
+    cout << "***********************************************************************" << endl;
+    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
+    cout << "***********************************************************************" << endl;
+    H->logIn();
+    H->mainPage();
+    delete H;
+    return 0;
+}
