@@ -1,4 +1,4 @@
-#include<iostream>
+        #include<iostream>
 		#include<fstream>
 		#include<cstring>
 		#include<iomanip>
@@ -129,6 +129,7 @@
 				void cusInfo();
 				void updateCustomer();
 				void checkCurrentBookings();
+				void searchCustomerByName(); 
 		}C;
 	
 		
@@ -257,7 +258,6 @@
 		            break;
 		        }
 		    }
-		    //room is not found, display error message
 		    if (record.eof())
 		    {
 		        cout << "Booking Record Not Found!" << endl;
@@ -571,7 +571,122 @@
 	        H.mainPage();
 	    }
 	}
-	
+void computeLPSArray(const string& pattern, int lps[]) {
+    int M = pattern.size();
+    int len = 0;
+    int i = 1;
+
+    lps[0] = 0;  // lps[0] is always 0
+
+    while (i < M) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+}
+
+bool KMPSearch(const string& pattern, const string& text) {
+    int M = pattern.size();
+    int N = text.size();
+    int lps[M];
+
+    computeLPSArray(pattern, lps);
+
+    int i = 0;  // index for text[]
+    int j = 0;  // index for pattern[]
+    while (i < N) {
+        if (pattern[j] == text[i]) {
+            i++;
+            j++;
+        }
+        if (j == M) {
+            return true;  // Found pattern
+        }
+        else if (i < N && pattern[j] != text[i]) {
+            if (j != 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+    }
+    return false;
+}
+
+void Customer::searchCustomerByName() {
+    cout << "***********************************************************************" << endl;
+    cout << "===========================SEARCH CUSTOMER============================" << endl;
+    cout << "***********************************************************************" << endl;
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
+    string searchName;
+    cout << "Enter Customer Name to Search: ";
+    cin >> searchName;
+    cin.ignore();  // Ignore the newline character after searchName input
+
+    const int MAX_CUSTOMERS = 100;
+    int roomNumbers[MAX_CUSTOMERS];
+    string customerNames[MAX_CUSTOMERS];
+    string checkInDates[MAX_CUSTOMERS];
+    int days[MAX_CUSTOMERS];
+    string mobileNumbers[MAX_CUSTOMERS];
+    string emails[MAX_CUSTOMERS];
+
+    int roomNumber;
+    string customerName, checkInDate, mobileNumber, email;
+    int day;
+    int customerCount = 0;
+
+    while (record >> roomNumber >> customerName >> checkInDate >> day >> mobileNumber >> email) {
+        if (customerCount < MAX_CUSTOMERS) {
+            roomNumbers[customerCount] = roomNumber;
+            customerNames[customerCount] = customerName;
+            checkInDates[customerCount] = checkInDate;
+            days[customerCount] = day;
+            mobileNumbers[customerCount] = mobileNumber;
+            emails[customerCount] = email;
+            customerCount++;
+        } else {
+            break;  // Prevent overflow if file has more customers than MAX_CUSTOMERS
+        }
+    }
+    record.close();
+cout << "-------------------- Search Results --------------------" << endl;
+    bool found = false;
+   for (int i = 0; i < customerCount; ++i) {
+   cout << "Searching for: " << searchName << endl;
+    if (KMPSearch(searchName, customerNames[i])) {
+        found = true;
+        cout << "Room Number: " << roomNumbers[i] << endl;
+        cout << "Customer Name: " << customerNames[i] << endl;
+        cout << "Check-in Date: " << checkInDates[i] << endl;
+        cout << "Number of Days: " << days[i] << endl;
+        cout << "Mobile Number: " << mobileNumbers[i] << endl;
+        cout << "Email: " << emails[i] << endl;
+        cout << "-----------------------------------------------" << endl;
+    }
+}
+
+    if (!found) {
+        cout << "No customer found with the name " << searchName << "." << endl;
+    }
+
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+}
 	void Room::oldRecord()
 	{
 	    system("cls");
@@ -911,7 +1026,8 @@ void Customer::checkCurrentBookings() {
 				    cout<<"[9] CHANGE STAFF PASSWORD"<<endl;
 				    cout<<"[10] CUSTOMER FEEDBACK"<<endl;
 				    cout<<"[11] CHECK CURRENT BOOKINGS"<<endl;
-				    cout<<"[12] EXIT"<<endl;
+				     cout << "[12] SEARCH CUSTOMER BY NAME" << endl;
+				    cout<<"[13] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
 				    cin>>Ht.choice;
 				    cin.ignore();
@@ -947,7 +1063,9 @@ void Customer::checkCurrentBookings() {
 						case 11: system("cls"); 
 								C.checkCurrentBookings();
 						         break;
-						case 12:
+						 case 12: C.searchCustomerByName();
+                                  break;
+						case 13:
 								 system("cls");
 								 cout << "***********************************************************************" << endl;
 							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
