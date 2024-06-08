@@ -7,6 +7,7 @@
 		#include<vector>
 		#include <cmath>
 		#include <algorithm>
+		#include <cctype>
 		using namespace std;
 		
 		const int MAX_BOOKINGS = 1000;
@@ -1025,8 +1026,8 @@ void displayBookings(const vector<int>& roomNumbers, const vector<string>& custo
 // Function to perform bucket sort
 void bucketSort(vector<int>& key, vector<int>& roomNumbers, vector<string>& customerNames, vector<string>& checkInDates, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
     int maxVal = *max_element(key.begin(), key.end());
-    int bucketCount = maxVal + 1; // Adjust the number of buckets
-    vector<vector<int> > buckets(bucketCount); // Each bucket contains a vector of indices
+    int bucketCount = maxVal + 1; 
+    vector<vector<int> > buckets(bucketCount); 
 
     // Distribute elements into buckets
     for (size_t i = 0; i < key.size(); ++i) {
@@ -1062,7 +1063,64 @@ void bucketSort(vector<int>& key, vector<int>& roomNumbers, vector<string>& cust
     mobileNumbers = tempMobileNumbers;
     emails = tempEmails;
 }
-// Function to sort bookings using bucket sort
+
+// Function to perform bucket sort on customer names in a case-insensitive manner
+void bucketSortNames(vector<string>& names, vector<int>& roomNumbers, vector<string>& customerNames, vector<string>& checkInDates, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
+    // Find the maximum length of the names
+    size_t maxLength = 0;
+    for (size_t i = 0; i < names.size(); ++i) {
+        if (names[i].length() > maxLength) {
+            maxLength = names[i].length();
+        }
+    }
+
+    // Create buckets for each character position
+    vector<vector<int> > buckets(256);
+
+    // Sort names by each character position from end to start
+    for (int pos = maxLength - 1; pos >= 0; --pos) {
+        // Clear the buckets
+        for (size_t i = 0; i < 256; ++i) {
+            buckets[i].clear();
+        }
+
+        // Place names into buckets
+        for (size_t i = 0; i < names.size(); ++i) {
+            char ch = pos < names[i].length() ? tolower(names[i][pos]) : 0;
+            buckets[static_cast<unsigned char>(ch)].push_back(i);
+        }
+
+        // Collect names from buckets
+        vector<int> tempRoomNumbers;
+        vector<string> tempCustomerNames;
+        vector<string> tempCheckInDates;
+        vector<int> tempDays;
+        vector<string> tempMobileNumbers;
+        vector<string> tempEmails;
+
+        for (size_t i = 0; i < 256; ++i) {
+            for (size_t j = 0; j < buckets[i].size(); ++j) {
+                int index = buckets[i][j];
+                tempRoomNumbers.push_back(roomNumbers[index]);
+                tempCustomerNames.push_back(customerNames[index]);
+                tempCheckInDates.push_back(checkInDates[index]);
+                tempDays.push_back(days[index]);
+                tempMobileNumbers.push_back(mobileNumbers[index]);
+                tempEmails.push_back(emails[index]);
+            }
+        }
+
+        // Update original vectors
+        roomNumbers = tempRoomNumbers;
+        customerNames = tempCustomerNames;
+        checkInDates = tempCheckInDates;
+        days = tempDays;
+        mobileNumbers = tempMobileNumbers;
+        emails = tempEmails;
+    }
+}
+
+// Function to sort bookings using bucket sort on customer names
 void Customer::bucketSortBookings() {
     ifstream record("record.txt");
     if (!record) {
@@ -1108,16 +1166,23 @@ void Customer::bucketSortBookings() {
     cout << "Current Unsorted Bookings: " << endl;
     displayBookings(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
 
-    cout << "Choose column to bucket sort by:\n1. Room Number\n2. Number of Days\nEnter your choice: ";
+    cout <<"Choose column to bucket sort by:"<<endl;
+    cout<<"1. Number of Days"<<endl;
+    cout<<"2. Customer Name"<<endl;
+    cout<<"3.Exit Bucket Sort "<<endl;
+    cout<<"Enter your choice: ";
     int sortChoice;
     cin >> sortChoice;
 
     switch (sortChoice) {
         case 1:
-            bucketSort(roomNumbers, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+            bucketSort(days, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
             break;
         case 2:
-            bucketSort(days, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+            bucketSortNames(customerNames, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+            break;
+        case 3: 
+            H.mainPage();
             break;
         default:
             cout << "Invalid choice. No sorting performed." << endl;
@@ -1126,7 +1191,8 @@ void Customer::bucketSortBookings() {
 
     cout << "\nSorted Bookings:" << endl;
     displayBookings(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
-
+    
+    
     cout << "\nPress Enter Y to return to the main menu: ";
     char back;
     cin >> back;
