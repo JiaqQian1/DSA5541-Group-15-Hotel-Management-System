@@ -131,6 +131,10 @@
 				void updateCustomer();
 				void checkCurrentBookings();
 				void searchCustomerByName(); 
+				void sortData(bool sortByDate = false); // Sort by date if true
+			    string convertDate(const string& date);
+			    char back;
+			    void bucketSortBookings();
 		}C;
 	
 		
@@ -661,7 +665,7 @@ void Customer::searchCustomerByName() {
             emails[customerCount] = email;
             customerCount++;
         } else {
-            break;  // Prevent overflow if file has more customers than MAX_CUSTOMERS
+            break;  
         }
     }
     record.close();
@@ -679,6 +683,8 @@ cout << "-------------------- Search Results --------------------" << endl;
         cout << "Email: " << emails[i] << endl;
         cout << "-----------------------------------------------" << endl;
     }
+    
+    
 }
 
     if (!found) {
@@ -778,7 +784,7 @@ cout << "-------------------- Search Results --------------------" << endl;
 
     bool found = false;
 
-    // Copy login file content to a temporary file
+
     while (loginIn >> staffID >> staffPassword)
     {
         if (staffID == Ht.staffId)
@@ -814,7 +820,6 @@ cout << "-------------------- Search Results --------------------" << endl;
             tempFile << staffID << " " << newPassword << endl;
             cout << "\nPassword changed successfully!" << endl;
 
-            // Update the password variable
             Ht.password = newPassword;
         }
         else
@@ -826,7 +831,6 @@ cout << "-------------------- Search Results --------------------" << endl;
     loginIn.close();
     tempFile.close();
 
-    // Replace the original login file with the temporary file
     remove("login.txt");
     rename("temp.txt", "login.txt");
 
@@ -884,23 +888,68 @@ cout << "-------------------- Search Results --------------------" << endl;
 	    }
 	}
 	
+string Customer::convertDate(const string& date) {
+    // Assuming date is in the format DD/MM/YYYY
+    string day = date.substr(0, 2);
+    string month = date.substr(3, 2);
+    string year = date.substr(6, 4);
+    return year + month + day;
+}
+
+void radixSortDates(vector<string>& dates, vector<int>& roomNumbers, vector<string>& names, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
+    int maxLen = 8; // Since the converted date format is "YYYYMMDD"
+
+    for (int exp = maxLen - 1; exp >= 0; exp--) {
+        vector<int> count(256, 0);
+
+        for (int i = 0; i < dates.size(); i++)
+            count[(unsigned char)dates[i][exp]]++;
+
+        for (int i = 1; i < 256; i++)
+            count[i] += count[i - 1];
+
+        vector<string> output(dates.size());
+        vector<int> tempRoomNumbers(dates.size());
+        vector<string> tempNames(dates.size());
+        vector<int> tempDays(dates.size());
+        vector<string> tempMobileNumbers(dates.size());
+        vector<string> tempEmails(dates.size());
+
+        for (int i = dates.size() - 1; i >= 0; i--) {
+            int pos = count[(unsigned char)dates[i][exp]] - 1;
+            output[pos] = dates[i];
+            tempRoomNumbers[pos] = roomNumbers[i];
+            tempNames[pos] = names[i];
+            tempDays[pos] = days[i];
+            tempMobileNumbers[pos] = mobileNumbers[i];
+            tempEmails[pos] = emails[i];
+            count[(unsigned char)dates[i][exp]]--;
+        }
+
+        for (int i = 0; i < dates.size(); i++) {
+            dates[i] = output[i];
+            roomNumbers[i] = tempRoomNumbers[i];
+            names[i] = tempNames[i];
+            days[i] = tempDays[i];
+            mobileNumbers[i] = tempMobileNumbers[i];
+            emails[i] = tempEmails[i];
+        }
+    }
+    
+}
+
 void radixSort(vector<int>& arr, vector<string>& names, vector<string>& checkInDates, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
-    // Find the maximum element in the array
     int maxVal = *max_element(arr.begin(), arr.end());
 
-    // Apply counting sort for each digit place: one's, ten's, hundred's, ...
     for (int exp = 1; maxVal / exp > 0; exp *= 10) {
-        vector<int> count(10, 0);  // Initialize count for digits 0-9
+        vector<int> count(10, 0);
 
-        // Count the occurrences of each digit
         for (int i = 0; i < arr.size(); i++)
             count[(arr[i] / exp) % 10]++;
 
-        // Update count[i] to contain the position of the digit in the sorted array
         for (int i = 1; i < 10; i++)
             count[i] += count[i - 1];
 
-        // Build the sorted array
         vector<int> output(arr.size());
         vector<string> tempNames(arr.size());
         vector<string> tempCheckInDates(arr.size());
@@ -909,16 +958,16 @@ void radixSort(vector<int>& arr, vector<string>& names, vector<string>& checkInD
         vector<string> tempEmails(arr.size());
 
         for (int i = arr.size() - 1; i >= 0; i--) {
-            output[count[(arr[i] / exp) % 10] - 1] = arr[i];
-            tempNames[count[(arr[i] / exp) % 10] - 1] = names[i];
-            tempCheckInDates[count[(arr[i] / exp) % 10] - 1] = checkInDates[i];
-            tempDays[count[(arr[i] / exp) % 10] - 1] = days[i];
-            tempMobileNumbers[count[(arr[i] / exp) % 10] - 1] = mobileNumbers[i];
-            tempEmails[count[(arr[i] / exp) % 10] - 1] = emails[i];
+            int pos = count[(arr[i] / exp) % 10] - 1;
+            output[pos] = arr[i];
+            tempNames[pos] = names[i];
+            tempCheckInDates[pos] = checkInDates[i];
+            tempDays[pos] = days[i];
+            tempMobileNumbers[pos] = mobileNumbers[i];
+            tempEmails[pos] = emails[i];
             count[(arr[i] / exp) % 10]--;
         }
 
-        // Copy the sorted elements to the original array
         for (int i = 0; i < arr.size(); i++) {
             arr[i] = output[i];
             names[i] = tempNames[i];
@@ -931,29 +980,82 @@ void radixSort(vector<int>& arr, vector<string>& names, vector<string>& checkInD
 }
 
 void Customer::checkCurrentBookings() {
-	
-	 cout << "***********************************************************************" << endl;
-    cout << "============================CURRENT BOOKINGS===========================" << endl;
-    cout << "***********************************************************************" << endl;
+    Hotel H;
+    int choice;
+
     ifstream record("record.txt");
     if (!record) {
         cout << "Error opening file." << endl;
         return;
     }
 
-    // Check if the record file is empty
+    int roomNumber;
+    string customerName, checkInDate, mobileNumber, email;
+    int day;
+
+    cout << "***********************************************************************" << endl;
+    cout << "============================CURRENT BOOKINGS===========================" << endl;
+    cout << "***********************************************************************" << endl;
+    cout << "*****************************ORIGINAL DATA******************************" << endl;
+    while (record >> roomNumber >> customerName >> checkInDate >> day >> mobileNumber >> email) {
+        cout << "\nRoom Number: " << roomNumber << endl;
+        cout << "Customer Name: " << customerName << endl;
+        cout << "Check-in Date: " << checkInDate << endl;
+        cout << "Number of Days: " << day << endl;
+        cout << "Mobile Number: " << mobileNumber << endl;
+        cout << "Email: " << email << endl;
+        cout << "-----------------------------------------------" << endl;
+    }
+
+    record.close();
+
+    cout<<"\n**************"<<endl;
+    cout<<"Radix sort by: "<<endl;
+    cout<<"**************"<<endl;
+    cout << "\n1. Room Number" << endl;
+    cout << "2. Check-in Date" << endl;
+    cout << "3. Back to previous page" << endl;
+    cout << "Enter your choice: ";
+    cin >> choice;
+
+    switch (choice) {
+        case 1:
+            system("cls");
+            cout << "***********************************************************************" << endl;
+            cout << "============================CURRENT BOOKINGS===========================" << endl;
+            cout << "***********************************************************************" << endl;
+            cout << "************************RADIX SORTED BY ROOM NUMBER********************" << endl;
+            sortData();
+            break;
+        case 2:
+            system("cls");
+            cout << "***********************************************************************" << endl;
+            cout << "============================CURRENT BOOKINGS===========================" << endl;
+            cout << "***********************************************************************" << endl;
+            cout << "******************RADIX SORTED DATA BY CHECK IN DATE*******************" << endl;
+            sortData(true); 
+            break;
+        case 3:
+            H.mainPage();
+            break;
+        default:
+            cout << "You are entered wrong choice. Please enter choice again: ";
+            cin >> choice;
+    }
+    
+}
+
+void Customer::sortData(bool sortByDate) { 
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
     record.seekg(0, ios::end);
     if (record.tellg() == 0) {
         cout << "No records found." << endl;
         record.close();
-        cout << "\nPress Enter Y to return to the main menu: ";
-	    cin >> Ht.back;
-	
-	    while (Ht.back == 'Y' || Ht.back == 'y')
-	    {
-	        H.mainPage();
-	    }
-        cin.ignore();
         return;
     }
     record.seekg(0, ios::beg);
@@ -965,7 +1067,6 @@ void Customer::checkCurrentBookings() {
     vector<string> mobileNumbers;
     vector<string> emails;
 
-    // Read booking details from the file
     int roomNumber;
     string customerName, checkInDate, mobileNumber, email;
     int day;
@@ -980,10 +1081,19 @@ void Customer::checkCurrentBookings() {
     }
     record.close();
 
-    // Sort roomNumbers along with other related data using radix sort
-    radixSort(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+    if (sortByDate) {
+        vector<string> convertedDates(checkInDates.size());
+        for (int i = 0; i < checkInDates.size(); ++i) {
+            convertedDates[i] = convertDate(checkInDates[i]);
+        }
+        radixSortDates(convertedDates, roomNumbers, customerNames, days, mobileNumbers, emails);
+        for (int i = 0; i < checkInDates.size(); ++i) {
+            checkInDates[i] = convertedDates[i].substr(6, 2) + "/" + convertedDates[i].substr(4, 2) + "/" + convertedDates[i].substr(0, 4);
+        }
+    } else {
+        radixSort(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+    }
 
-    // Print booking details sorted by roomNumber
     for (int i = 0; i < roomNumbers.size(); ++i) {
         cout << "Room Number: " << roomNumbers[i] << endl;
         cout << "Customer Name: " << customerNames[i] << endl;
@@ -993,21 +1103,16 @@ void Customer::checkCurrentBookings() {
         cout << "Email: " << emails[i] << endl;
         cout << "-----------------------------------------------" << endl;
     }
-    
-    cout << "\nPress Enter Y to return to the main menu: ";
-	    cin >> Ht.back;
-	
-	    while (Ht.back == 'Y' || Ht.back == 'y')
-	    {
-	        H.mainPage();
-	    }
 		cout << "\nPress Enter Y to return to the main menu: ";
-	    cin >> Ht.back;
-	
-	    while (Ht.back == 'Y' || Ht.back == 'y')
-	    {
-	        H.mainPage();
-	    }
+		cin.ignore();
+		cin>>Ht.back;
+		while (Ht.back == 'Y' || Ht.back == 'y')
+		{
+			system("cls");
+			cout<<endl;
+			C.checkCurrentBookings();
+	   }
+    
 }
 
 // Function to display bookings
