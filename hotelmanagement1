@@ -1377,6 +1377,9 @@ int jumpSearch(const vector<string>& dates, const string& target)
             cout << "         Email: " << EMAIL << endl;
             cout << "====================================\n";
         }
+	else {
+            cout << "This date is no customer check in." << endl;
+        }
         n++;
     }
     record.close();
