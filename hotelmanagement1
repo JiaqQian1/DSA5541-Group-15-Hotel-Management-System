@@ -1407,7 +1407,7 @@ int jumpSearch(const vector<string>& dates, const string& target)
 				    cout<<"[11] CHECK CURRENT BOOKINGS"<<endl;
 				    cout<<"[12] SEARCH CUSTOMER BY NAME" << endl;
 				    cout<<"[13] BUCKET SORT BOOKINGS" << endl;
-				    cout<<"[14] SEARCH DATE BY CHECJ IN"<<endl;
+				    cout<<"[14] SEARCH DATE BY CHECK IN"<<endl;
 				    cout<<"[15] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
 				    cin>>Ht.choice;
