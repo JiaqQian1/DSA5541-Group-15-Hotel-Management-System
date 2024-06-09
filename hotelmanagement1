@@ -1307,26 +1307,29 @@ void Customer::bucketSortBookings() {
     }
 }
 
-int jumpSearch(const vector<string>& arr, const string& target) {
-    int n = arr.size();
+int jumpSearch(const vector<string>& dates, const string& target) 
+{
+    int n = dates.size();
+    if (n == 0 || target.length() != 10) { // Assuming date format is "YYYY-MM-DD"
+        return -1; // Error: Empty vector or incorrect date format
+    }
+
     int step = sqrt(n);
     int prev = 0;
-    while (arr[min(step, n)-1] < target) {
+    while (dates[min(step, n) - 1] < target) {
         prev = step;
         step += sqrt(n);
         if (prev >= n)
             return -1; // Not found
     }
-    while (arr[prev] < target) {
+    while (dates[prev] < target) {
         prev++;
         if (prev == min(step, n))
             return -1; // Not found
     }
-    if (arr[prev] == target)
+    if (dates[prev] == target)
         return prev; // Found
     return -1; // Not found
-    
-    
 }
 
     void Room::jumpSearchDate()
