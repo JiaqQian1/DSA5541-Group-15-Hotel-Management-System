@@ -123,6 +123,7 @@
 				void checkOut();
 				void oldRecord();
 				void feedback();
+				void jumpSearchDate();
 		}R;
 		class Customer:public Hotel
 		{
@@ -1306,6 +1307,68 @@ void Customer::bucketSortBookings() {
     }
 }
 
+int jumpSearch(const vector<string>& arr, const string& target) {
+    int n = arr.size();
+    int step = sqrt(n);
+    int prev = 0;
+    while (arr[min(step, n)-1] < target) {
+        prev = step;
+        step += sqrt(n);
+        if (prev >= n)
+            return -1; // Not found
+    }
+    while (arr[prev] < target) {
+        prev++;
+        if (prev == min(step, n))
+            return -1; // Not found
+    }
+    if (arr[prev] == target)
+        return prev; // Found
+    return -1; // Not found
+    
+    
+}
+
+    void Room::jumpSearchDate()
+{
+    system("cls");
+    cout << "=======================================================" << endl;
+    cout << "================ SEARCH DATE BY CHECK IN ==============" << endl;
+    cout << "=======================================================" << endl;
+
+    cout << "Enter the date to search (YYYY/MM/DD), or type 'all' to view all bookings: ";
+    string targetDate;
+    cin >> targetDate;
+
+    ifstream record("record.txt");
+    int blockSize = 5; // Set the block size
+    int n = 0; // Count the number of records
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+    int ROOMNUM, DAY;
+    while (record >> ROOMNUM >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL)
+    {
+        if (CHECKIN == targetDate || targetDate == "all") // Check if the date matches the search date or if the search date is empty (to display all records)
+        {
+            cout << "     \nRecord " << n+1 << ":\n";
+            cout << "------------------------------------"<<endl;
+            cout << " Room Number  : " << ROOMNUM << endl;
+            cout << "Customer Name : " << CUSNAME << endl;
+            cout << "Check-In Date : " << CHECKIN << endl;
+            cout << "Number of Days: " << DAY << endl;
+            cout << "Mobile Number : " << MOBILE << endl;
+            cout << "         Email: " << EMAIL << endl;
+            cout << "====================================\n";
+        }
+        n++;
+    }
+    record.close();
+
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+
+    mainPage(); // Return to the main menu
+}
 
 		void Hotel::mainPage()
 		{
