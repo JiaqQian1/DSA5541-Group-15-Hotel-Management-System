@@ -10,6 +10,7 @@
 		#include <cctype>
 		using namespace std;
 		
+		const int MAX_RECORDS = 1000;
 		const int MAX_BOOKINGS = 1000;
 		class Hotel
 		{
@@ -136,6 +137,8 @@
 			    string convertDate(const string& date);
 			    char back;
 			    void bucketSortBookings();
+				void bucketSort(int key[], int roomNumbers[], char customerNames[][100], char checkInDates[][11], int days[], char mobileNumbers[][15], char emails[][50], int n);
+				void bucketSortNames(char names[][100], int roomNumbers[], char customerNames[][100], char checkInDates[][11], int days[], char mobileNumbers[][15], char emails[][50], int n);
 		}C;
 	
 		
@@ -1117,8 +1120,8 @@ void Customer::sortData(bool sortByDate) {
 }
 
 // Function to display bookings
-void displayBookings(const vector<int>& roomNumbers, const vector<string>& customerNames, const vector<string>& checkInDates, const vector<int>& days, const vector<string>& mobileNumbers, const vector<string>& emails) {
-    for (size_t i = 0; i < roomNumbers.size(); ++i) {
+void displayBookings(int roomNumbers[], char customerNames[][100], char checkInDates[][11], int days[], char mobileNumbers[][15], char emails[][50], int size) {
+    for (int i = 0; i < size; ++i) {
         cout << "\nRoom Number: " << roomNumbers[i] << endl;
         cout << "Customer Name: " << customerNames[i] << endl;
         cout << "Check-in Date: " << checkInDates[i] << endl;
@@ -1129,106 +1132,117 @@ void displayBookings(const vector<int>& roomNumbers, const vector<string>& custo
     }
 }
 
-// Function to perform bucket sort
-void bucketSort(vector<int>& key, vector<int>& roomNumbers, vector<string>& customerNames, vector<string>& checkInDates, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
-    int maxVal = *max_element(key.begin(), key.end());
-    int bucketCount = maxVal + 1; 
-    vector<vector<int> > buckets(bucketCount); 
-
-    // Distribute elements into buckets
-    for (size_t i = 0; i < key.size(); ++i) {
-        buckets[key[i]].push_back(i); // Store the index
-    }
-
-    // Clear original vectors
-    vector<int> tempRoomNumbers;
-    vector<string> tempCustomerNames;
-    vector<string> tempCheckInDates;
-    vector<int> tempDays;
-    vector<string> tempMobileNumbers;
-    vector<string> tempEmails;
-
-    // Concatenate sorted buckets
-    for (size_t i = 0; i < buckets.size(); ++i) {
-        for (size_t j = 0; j < buckets[i].size(); ++j) {
-            int index = buckets[i][j];
-            tempRoomNumbers.push_back(roomNumbers[index]);
-            tempCustomerNames.push_back(customerNames[index]);
-            tempCheckInDates.push_back(checkInDates[index]);
-            tempDays.push_back(days[index]);
-            tempMobileNumbers.push_back(mobileNumbers[index]);
-            tempEmails.push_back(emails[index]);
-        }
-    }
-
-    // Update original vectors
-    roomNumbers = tempRoomNumbers;
-    customerNames = tempCustomerNames;
-    checkInDates = tempCheckInDates;
-    days = tempDays;
-    mobileNumbers = tempMobileNumbers;
-    emails = tempEmails;
+// Function to get maximum element from an array
+int getMax(int a[], int n) {
+    int max = a[0];
+    for (int i = 1; i < n; ++i)
+        if (a[i] > max)
+            max = a[i];
+    return max;
 }
 
-// Function to perform bucket sort on customer names in a case-insensitive manner
-void bucketSortNames(vector<string>& names, vector<int>& roomNumbers, vector<string>& customerNames, vector<string>& checkInDates, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
-    // Find the maximum length of the names
-    size_t maxLength = 0;
-    for (size_t i = 0; i < names.size(); ++i) {
-        if (names[i].length() > maxLength) {
-            maxLength = names[i].length();
-        }
+// Function to perform bucket sort on an integer array
+void Customer::bucketSort(int key[], int roomNumbers[], char customerNames[][100], char checkInDates[][11], int days[], char mobileNumbers[][15], char emails[][50], int n) {
+     int max = getMax(key, n);
+    int* buckets = new int[max + 1]();
+    int* indices = new int[max + 1]();
+
+    // Distribute elements into buckets
+    for (int i = 0; i < n; ++i) {
+        buckets[key[i]]++;
     }
 
-    // Create buckets for each character position
-    vector<vector<int> > buckets(256);
+    // Update indices for original positions
+    for (int i = 1; i <= max; ++i) {
+        indices[i] = indices[i - 1] + buckets[i - 1];
+    }
 
-    // Sort names by each character position from end to start
+    // Temporary arrays to hold sorted values
+    int* tempRoomNumbers = new int[n];
+    char tempCustomerNames[MAX_RECORDS][100];
+    char tempCheckInDates[MAX_RECORDS][11];
+    int* tempDays = new int[n];
+    char tempMobileNumbers[MAX_RECORDS][15];
+    char tempEmails[MAX_RECORDS][50];
+
+    // Copy elements into temporary arrays in sorted order
+    for (int i = 0; i < n; ++i) {
+        int index = indices[key[i]]++;
+        tempRoomNumbers[index] = roomNumbers[i];
+        strcpy(tempCustomerNames[index], customerNames[i]);
+        strcpy(tempCheckInDates[index], checkInDates[i]);
+        tempDays[index] = days[i];
+        strcpy(tempMobileNumbers[index], mobileNumbers[i]);
+        strcpy(tempEmails[index], emails[i]);
+    }
+
+    // Copy sorted elements back to original arrays
+    for (int i = 0; i < n; ++i) {
+        roomNumbers[i] = tempRoomNumbers[i];
+        strcpy(customerNames[i], tempCustomerNames[i]);
+        strcpy(checkInDates[i], tempCheckInDates[i]);
+        days[i] = tempDays[i];
+        strcpy(mobileNumbers[i], tempMobileNumbers[i]);
+        strcpy(emails[i], tempEmails[i]);
+    }
+
+    delete[] buckets;
+    delete[] indices;
+    delete[] tempRoomNumbers;
+    delete[] tempDays;
+}
+
+// Function to sort bookings using bucket sort on customer names in a case-insensitive manner
+void Customer::bucketSortNames(char names[][100], int roomNumbers[], char customerNames[][100], char checkInDates[][11], int days[], char mobileNumbers[][15], char emails[][50], int n) {
+      size_t maxLength = 0;
+    for (int i = 0; i < n; ++i) {
+        maxLength = max(maxLength, strlen(names[i]));
+    }
+
     for (int pos = maxLength - 1; pos >= 0; --pos) {
-        // Clear the buckets
-        for (size_t i = 0; i < 256; ++i) {
-            buckets[i].clear();
+        int buckets[256][MAX_RECORDS] = {0};
+        int count[256] = {0};
+
+        for (int i = 0; i < n; ++i) {
+            char ch = pos < strlen(names[i]) ? tolower(names[i][pos]) : 0;
+            buckets[ch][count[ch]++] = i;
         }
 
-        // Place names into buckets
-        for (size_t i = 0; i < names.size(); ++i) {
-            char ch = pos < names[i].length() ? tolower(names[i][pos]) : 0;
-            buckets[static_cast<unsigned char>(ch)].push_back(i);
-        }
+        int idx = 0;
+        int tempRoomNumbers[MAX_RECORDS];
+        char tempCustomerNames[MAX_RECORDS][100];
+        char tempCheckInDates[MAX_RECORDS][11];
+        int tempDays[MAX_RECORDS];
+        char tempMobileNumbers[MAX_RECORDS][15];
+        char tempEmails[MAX_RECORDS][50];
 
-        // Collect names from buckets
-        vector<int> tempRoomNumbers;
-        vector<string> tempCustomerNames;
-        vector<string> tempCheckInDates;
-        vector<int> tempDays;
-        vector<string> tempMobileNumbers;
-        vector<string> tempEmails;
-
-        for (size_t i = 0; i < 256; ++i) {
-            for (size_t j = 0; j < buckets[i].size(); ++j) {
+        for (int i = 0; i < 256; ++i) {
+            for (int j = 0; j < count[i]; ++j) {
                 int index = buckets[i][j];
-                tempRoomNumbers.push_back(roomNumbers[index]);
-                tempCustomerNames.push_back(customerNames[index]);
-                tempCheckInDates.push_back(checkInDates[index]);
-                tempDays.push_back(days[index]);
-                tempMobileNumbers.push_back(mobileNumbers[index]);
-                tempEmails.push_back(emails[index]);
+                tempRoomNumbers[idx] = roomNumbers[index];
+                strcpy(tempCustomerNames[idx], customerNames[index]);
+                strcpy(tempCheckInDates[idx], checkInDates[index]);
+                tempDays[idx] = days[index];
+                strcpy(tempMobileNumbers[idx], mobileNumbers[index]);
+                strcpy(tempEmails[idx], emails[index]);
+                idx++;
             }
         }
 
-        // Update original vectors
-        roomNumbers = tempRoomNumbers;
-        customerNames = tempCustomerNames;
-        checkInDates = tempCheckInDates;
-        days = tempDays;
-        mobileNumbers = tempMobileNumbers;
-        emails = tempEmails;
+        for (int i = 0; i < n; ++i) {
+            roomNumbers[i] = tempRoomNumbers[i];
+            strcpy(customerNames[i], tempCustomerNames[i]);
+            strcpy(checkInDates[i], tempCheckInDates[i]);
+            days[i] = tempDays[i];
+            strcpy(mobileNumbers[i], tempMobileNumbers[i]);
+            strcpy(emails[i], tempEmails[i]);
+        }
     }
 }
 
-// Function to sort bookings using bucket sort on customer names
+// Function to sort bookings using bucket sort
 void Customer::bucketSortBookings() {
-    ifstream record("record.txt");
+   ifstream record("record.txt");
     if (!record) {
         cout << "Error opening file." << endl;
         return;
@@ -1242,52 +1256,54 @@ void Customer::bucketSortBookings() {
         char back;
         cin >> back;
         if (back == 'Y' || back == 'y') {
-            H.mainPage();
+            H.mainPage(); 
         }
         cin.ignore();
         return;
     }
     record.seekg(0, ios::beg);
 
-    vector<int> roomNumbers;
-    vector<string> customerNames;
-    vector<string> checkInDates;
-    vector<int> days;
-    vector<string> mobileNumbers;
-    vector<string> emails;
+    int roomNumbers[MAX_RECORDS];
+    char customerNames[MAX_RECORDS][100];
+    char checkInDates[MAX_RECORDS][11];
+    int days[MAX_RECORDS];
+    char mobileNumbers[MAX_RECORDS][15];
+    char emails[MAX_RECORDS][50];
 
     int roomNumber, day;
-    string customerName, checkInDate, mobileNumber, email;
+    char customerName[100], checkInDate[11], mobileNumber[15], email[50];
+    int size = 0;
 
     while (record >> roomNumber >> customerName >> checkInDate >> day >> mobileNumber >> email) {
-        roomNumbers.push_back(roomNumber);
-        customerNames.push_back(customerName);
-        checkInDates.push_back(checkInDate);
-        days.push_back(day);
-        mobileNumbers.push_back(mobileNumber);
-        emails.push_back(email);
+        roomNumbers[size] = roomNumber;
+        strcpy(customerNames[size], customerName);
+        strcpy(checkInDates[size], checkInDate);
+        days[size] = day;
+        strcpy(mobileNumbers[size], mobileNumber);
+        strcpy(emails[size], email);
+        size++;
     }
     record.close();
 
     cout << "Current Unsorted Bookings: " << endl;
-    displayBookings(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+    displayBookings(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails, size);
 
-    cout <<"Choose column to bucket sort by:"<<endl;
-    cout<<"1. Number of Days"<<endl;
-    cout<<"2. Customer Name"<<endl;
-    cout<<"3.Exit Bucket Sort "<<endl;
-    cout<<"Enter your choice: ";
+    cout << "Choose column to bucket sort by:" << endl;
+    cout << "1. Number of Days" << endl;
+    cout << "2. Customer Name" << endl;
+    cout << "3. Exit Bucket Sort" << endl;
+    cout << "Enter your choice: ";
     int sortChoice;
     cin >> sortChoice;
 
     switch (sortChoice) {
         case 1:
-            bucketSort(days, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+            bucketSort(days, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails, size);
             break;
         case 2:
-            bucketSortNames(customerNames, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+            bucketSortNames(customerNames, roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails, size);
             break;
-        case 3: 
+        case 3:
             H.mainPage();
             break;
         default:
@@ -1296,14 +1312,13 @@ void Customer::bucketSortBookings() {
     }
 
     cout << "\nSorted Bookings:" << endl;
-    displayBookings(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
-    
-    
+    displayBookings(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails, size);
+
     cout << "\nPress Enter Y to return to the main menu: ";
     char back;
     cin >> back;
     if (back == 'Y' || back == 'y') {
-        H.mainPage();
+        H.mainPage(); 
     }
 }
 
