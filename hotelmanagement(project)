@@ -14,6 +14,27 @@
 #include <stack>
 using namespace std;
 	stack<string> feedbackStack;
+class Staff {
+public:
+    void addStaff();
+    void displayStaff();
+    void updateStaff();
+    void changePassword();
+
+
+    struct StaffInfo {
+        int id;
+        string name;
+        string position;
+        string username;
+        string password;
+    };
+
+    vector<StaffInfo> staffList;
+
+    void readData();
+    void saveData();
+};
 class Hotel {
 protected:
     struct Hot {
@@ -1448,7 +1469,7 @@ void checkCurrentBookings() {
             insertionSortByCustomerName(bookings, count);
             break;
         case 3: 
-            // Exit or return to main menu logic can be added here
+            M.mainPage();
             break;
         default:
             cout << "Invalid choice. Sorting by Room Number by default." << endl;
@@ -1609,6 +1630,204 @@ void Room::binarySearch(string searchKey, int option) {
             M.mainPage();
         }
     }
+void Staff::readData() {
+    ifstream file("staff.txt");
+    if (!file) {
+        cout << "Error opening staff file. No staff data found." << endl;
+        return;
+    }
+
+    staffList.clear();
+    StaffInfo staff;
+    while (file >> staff.id >> staff.name >> staff.position >> staff.username >> staff.password) {
+        staffList.push_back(staff);
+    }
+    file.close();
+}
+
+void Staff::saveData() {
+    ofstream file("staff.txt");
+    if (!file) {
+        cout << "Error saving staff data." << endl;
+        return;
+    }
+
+    for (size_t i = 0; i < staffList.size(); ++i) {
+        file << staffList[i].id << " " << staffList[i].name << " " << staffList[i].position << " "
+             << staffList[i].username << " " << staffList[i].password << endl;
+    }
+    file.close();
+}
+
+void Staff::addStaff() {
+    cout << "*******************************************************" << endl;
+    cout << "===================ADD NEW STAFF=======================" << endl;
+    cout << "*******************************************************" << endl;
+
+    StaffInfo newStaff;
+    cout << "Enter Staff ID: ";
+    cin >> newStaff.id;
+    cin.ignore();
+
+    cout << "Enter Staff Name: ";
+    getline(cin, newStaff.name);
+
+    cout << "Enter Staff Position: ";
+    getline(cin, newStaff.position);
+
+    cout << "Enter Username: ";
+    getline(cin, newStaff.username);
+
+    cout << "Enter Password: ";
+    getline(cin, newStaff.password);
+
+    staffList.push_back(newStaff);
+    saveData();
+}
+
+void Staff::displayStaff() {
+    cout << "*******************************************************" << endl;
+    cout << "===================STAFF LIST==========================" << endl;
+    cout << "*******************************************************" << endl;
+
+    if (staffList.empty()) {
+        cout << "No staff data available." << endl;
+        return;
+    }
+
+    for (size_t i = 0; i < staffList.size(); ++i) {
+        cout << "ID: " << staffList[i].id << endl;
+        cout << "Name: " << staffList[i].name << endl;
+        cout << "Position: " << staffList[i].position << endl;
+        cout << "Username: " << staffList[i].username << endl;
+        cout << "Password: " << staffList[i].password << endl;
+        cout << "-------------------------------------------------------" << endl;
+    }
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    M.mainPage(); 
+}
+
+void Staff::updateStaff() {
+    cout << "*******************************************************" << endl;
+    cout << "=================UPDATE STAFF DETAILS===================" << endl;
+    cout << "*******************************************************" << endl;
+
+    if (staffList.empty()) {
+        cout << "No staff data available." << endl;
+        return;
+    }
+
+    int idToUpdate;
+    cout << "Enter ID of staff to update: ";
+    cin >> idToUpdate;
+
+    bool found = false;
+    for (size_t i = 0; i < staffList.size(); ++i) {
+        if (staffList[i].id == idToUpdate) {
+            cout << "Enter new Name: ";
+            cin.ignore();
+            getline(cin, staffList[i].name);
+
+            cout << "Enter new Position: ";
+            getline(cin, staffList[i].position);
+
+            cout << "Enter new Username: ";
+            getline(cin, staffList[i].username);
+
+            cout << "Enter new Password: ";
+            getline(cin, staffList[i].password);
+
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Staff with ID " << idToUpdate << " not found." << endl;
+    } else {
+        saveData();
+        cout << "Staff details updated successfully." << endl;
+    }
+    
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    M.mainPage(); 
+}
+
+void Staff::changePassword() {
+    cout << "*******************************************************" << endl;
+    cout << "===================CHANGE PASSWORD=====================" << endl;
+    cout << "*******************************************************" << endl;
+
+    if (staffList.empty()) {
+        cout << "No staff data available." << endl;
+        return;
+    }
+
+    string username;
+    cout << "Enter Username: ";
+    cin >> username;
+
+    bool found = false;
+    for (size_t i = 0; i < staffList.size(); ++i) {
+        if (staffList[i].username == username) {
+            cout << "Enter new Password: ";
+            cin.ignore();
+            getline(cin, staffList[i].password);
+
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Staff with Username " << username << " not found." << endl;
+    } else {
+        saveData();
+        cout << "Password changed successfully." << endl;
+    }
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    M.mainPage(); 
+}
+void menu::staffManagement() {
+    int staffChoice;
+    cout << "*******************************************************" << endl;
+    cout << "===================STAFF MANAGEMENT====================" << endl;
+    cout << "*******************************************************" << endl;
+    cout << "[1] Add New Staff" << endl;
+    cout << "[2] View Staff Information" << endl;
+    cout << "[3] Update Staff Information" << endl;
+    cout << "[4] Change Staff Password" << endl;
+    cout << "[5] Back to Main Menu" << endl;
+    cout << "\nEnter your choice: ";
+    cin >> staffChoice;
+
+    switch(staffChoice) {
+        case 1:
+            S.addStaff();
+            break;
+        case 2:
+            S.displayStaff();
+            break;
+        case 3:
+            S.updateStaff();
+            break;
+        case 4:
+            S.changePassword();
+            break;
+        case 5:
+            M.mainPage();
+            break;
+        default:
+            cout << "Invalid choice! Please try again." << endl;
+            break;
+    }
+}
 
 		void menu::mainPage()
 		{
@@ -1630,7 +1849,8 @@ void Room::binarySearch(string searchKey, int option) {
 				    cout<<"[12] CANCEL BOOKING"<<endl;
 				    cout<<"[13] SORT BOOKINGS (Insertion)"<<endl;
 				    cout<<"[14] SEARCHING"<<endl;
-				    cout<<"[15] EXIT"<<endl;
+                    cout<<"[15] STAFF MANAGEMENT"<<endl;
+				    cout<<"[16] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
 				    cin>>Ht->choice;
 				    cin.ignore();
@@ -1727,7 +1947,10 @@ void Room::binarySearch(string searchKey, int option) {
 						        	default:
 							            cout << "Invalid choice. Please try again." << endl;
 							        break;
-						case 15:
+                        case 15: system("cls");
+                                 staffManagement();
+                                 break;
+						case 16:
 								 system("cls");
 								 cout << "***********************************************************************" << endl;
 							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
