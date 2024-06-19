@@ -58,6 +58,7 @@ public:
     void checkOut();
     void oldRecord();
     void feedback();
+    void binarySearch(string searchKey, int option);
 } R;
 
 class Customer : public Hotel {
@@ -108,6 +109,7 @@ public:
 class menu:public Hotel{
 	public:
 		void mainPage();
+		void searchMenu();
 }M;
 
 void Hotel::login() {
@@ -1475,6 +1477,139 @@ void checkCurrentBookings() {
     M.mainPage(); 
 }
 
+void menu::searchMenu()
+{
+	system("cls");
+    cout << "*******************************************************" << endl;
+    cout << "==================SEARCH MENU==========================" << endl;
+    cout << "*******************************************************" << endl;
+    cout << "[1] Search by Customer Name" << endl;
+    cout << "[2] Search Rooms Available" << endl;
+    cout << "[3] Search by Check-in Date" << endl;
+    
+    int searchOption;
+	cout << "\nEnter your search option: ";
+    cin >> searchOption;
+    cin.ignore();
+    
+    string searchKey;
+    switch (searchOption) {
+        case 1:
+            cout << "Enter Customer Name to search: ";
+            getline(cin, searchKey);
+            R.binarySearch(searchKey, 1);
+            break;
+
+        case 2:
+            R.binarySearch("", 2); // Search rooms available
+            break;
+
+        case 3:
+            cout << "Enter Check-in Date (yyyy-mm-dd) to search: ";
+            getline(cin, searchKey);
+            R.binarySearch(searchKey, 3);
+            break;
+
+        default:
+            cout << "Invalid search option." << endl;
+            break;
+    }
+}
+
+void Room::binarySearch(string searchKey, int option) {
+    ifstream record("record.txt");
+
+    int roomNumber;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+    int existingRoomNum, DAY;
+
+    vector<string> searchResults;
+
+    switch (option) {
+        case 1:
+            while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL) {
+                if (CUSNAME == searchKey) {
+                    stringstream ss;
+                    ss<<"\n-------------------------------------------";
+                    ss<< "\nRoom Number: " << existingRoomNum;
+					ss<< "\nCustomer Name: " << CUSNAME;
+                    ss<< "\nCheck-in Date: " << CHECKIN;
+					ss<< "\nMobile: " << MOBILE;
+					ss<< "\nEmail: " << EMAIL;
+					ss<<"\n-------------------------------------------";
+                    searchResults.push_back(ss.str());
+                }
+            }
+            break;
+
+        case 2:
+            while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL) 
+			{
+                if (bo.isRoomBooked(existingRoomNum )) 
+				{
+                    stringstream ss;
+                    ss<<"\n-------------------------------------------";
+                    ss<< "\nRoom Number: " << existingRoomNum;
+					ss<< "\nCustomer Name: " << CUSNAME;
+                    ss<< "\nCheck-in Date: " << CHECKIN;
+					ss<< "\nMobile: " << MOBILE;
+					ss<< "\nEmail: " << EMAIL;
+					ss<<"\n-------------------------------------------\n";
+                    searchResults.push_back(ss.str());
+                }
+            }
+            break;
+
+        case 3:
+            while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL) {
+                if (CHECKIN == searchKey) 
+				{
+                    stringstream ss;
+                    ss<<"\n-------------------------------------------";
+                    ss<< "\nRoom Number: " << existingRoomNum;
+					ss<< "\nCustomer Name: " << CUSNAME;
+                    ss<< "\nCheck-in Date: " << CHECKIN;
+					ss<< "\nMobile: " << MOBILE;
+					ss<< "\nEmail: " << EMAIL;
+					ss<<"\n-------------------------------------------\n";
+                    searchResults.push_back(ss.str());
+                }
+            }
+            break;
+
+        default:
+            cout << "Invalid option." << endl;
+            break;
+    }
+
+    record.close();
+
+    if (!searchResults.empty()) {
+    cout << "\nSearch Results:" << endl;
+    for (vector<string>::const_iterator it = searchResults.begin(); it != searchResults.end(); ++it) {
+        cout << *it << endl;
+    }
+} else {
+    cout << "No results found." << endl;
+}
+
+     char userChoice;
+        cout << "\nPress 'Y' to return to the main menu, 'C' to continue searching: ";
+        cin >> userChoice;
+        cin.ignore();
+
+        if (userChoice == 'Y' || userChoice == 'y') {
+            system("cls");
+            M.mainPage();
+        } else if (userChoice == 'C' || userChoice == 'c') {
+        	M.searchMenu();
+        } else {
+            cout << "Invalid input, returning to main menu." << endl;
+            system("cls");
+            M.mainPage();
+        }
+    }
+
 		void menu::mainPage()
 		{
 		            system("cls");
@@ -1494,7 +1629,8 @@ void checkCurrentBookings() {
 				    cout<<"[11] CHECK CURRENT BOOKINGS"<<endl;
 				    cout<<"[12] CANCEL BOOKING"<<endl;
 				    cout<<"[13] SORT BOOKINGS (Insertion)"<<endl;
-				    cout<<"[14] EXIT"<<endl;
+				    cout<<"[14] SEARCHING"<<endl;
+				    cout<<"[15] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
 				    cin>>Ht->choice;
 				    cin.ignore();
@@ -1585,7 +1721,13 @@ void checkCurrentBookings() {
 						case 13: system("cls");
 					 	         checkCurrentBookings();
 						         break;
-						case 14:
+						case 14: system("cls");
+						            M.searchMenu();
+						            break;
+						        	default:
+							            cout << "Invalid choice. Please try again." << endl;
+							        break;
+						case 15:
 								 system("cls");
 								 cout << "***********************************************************************" << endl;
 							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
