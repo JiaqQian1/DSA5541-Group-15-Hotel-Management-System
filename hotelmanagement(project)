@@ -11,9 +11,9 @@
 #include <cstdlib> 
 #include <string>
 #include <sstream>
-
+#include <stack>
 using namespace std;
-
+	stack<string> feedbackStack;
 class Hotel {
 protected:
     struct Hot {
@@ -757,48 +757,81 @@ void booking::newBooking()
     M.mainPage();
 }
 
+void Room::feedback() {
+    system("cls");
 
-	 void Room::feedback() 
-	 {
-	    system("cls");
-	
-	    int roomNumber;
-	    string feedback;
-	
-	    cout << "**************************************************************" << endl;
-	    cout << "========================CUSTOMER FEEDBACK======================" << endl;
-	    cout << "**************************************************************" << endl;
-	
-	    cout << "Enter Room Number: ";
-	    cin >> roomNumber;
-	
-	    cin.ignore(); 
-	
-	    cout << "Enter Feedback: ";
-	    getline(cin, feedback);
-	
-	    ofstream feedbackFile("feedback.txt", ios::app);
-	
-	    if (!feedbackFile) {
-	        cout << "Error opening the feedback file." << endl;
-	        exit(1);
-	    }
-	
-	    feedbackFile <<"Room Number : "<<roomNumber<<"\nFeedback:"<< setw(30) << feedback << endl<<endl;
-	
-	    feedbackFile.close();
-	
-	    cout << "Feedback submitted successfully!" << endl;
-	
-	    cout << "Press Enter Y to return to the main menu: ";
-	    cin >> Ht->back;
-	  
-	    if (Ht->back == 'Y' || Ht->back == 'y')
-	    {
-	        M.mainPage(); 
-	    }
-	}
+    int roomNumber;
+    char feedback[200];
 
+    cout << "**************************************************************" << endl;
+    cout << "========================CUSTOMER FEEDBACK======================" << endl;
+    cout << "**************************************************************" << endl;
+
+    cout << "Enter Room Number (1-20): ";
+    cin >> roomNumber;
+    cin.ignore();
+
+    if (roomNumber < 1 || roomNumber > 20) {
+        cout << "Invalid room number. Please enter a number between 1 and 20." << endl;
+        cout << "Press Enter to return to the main menu.";
+        cin.get();
+        M.mainPage();
+        return;
+    }
+
+    cout << "Enter Feedback: ";
+    cin.getline(feedback, sizeof(feedback));
+
+    ofstream feedbackFile("feedback.txt", ios::app);
+    if (!feedbackFile) {
+        cout << "Error opening the feedback file." << endl;
+        exit(1);
+    }
+
+    // Convert roomNumber to a character array
+    char roomNumberStr[3];
+    sprintf(roomNumberStr, "%d", roomNumber);
+
+    // Construct feedback entry
+    char feedbackEntry[250];
+    sprintf(feedbackEntry, "Room Number: %s\nFeedback: %s", roomNumberStr, feedback);
+
+    // Push feedback entry onto stack
+    feedbackStack.push(feedbackEntry);
+
+    // Write feedback entry to file
+    feedbackFile << feedbackEntry << endl << endl;
+    feedbackFile.close();
+
+    cout << "Feedback submitted successfully!" << endl;
+    cout << "**************************************************************" << endl;
+    cout << "========================ALL FEEDBACK==========================" << endl;
+    cout << "**************************************************************" << endl;
+
+    // Use vector to store feedback temporarily for sorting
+    vector<string> feedbackVector;
+    while (!feedbackStack.empty()) {
+        feedbackVector.push_back(feedbackStack.top());
+        feedbackStack.pop();
+    }
+
+    // Sort feedback entries by room number
+    sort(feedbackVector.begin(), feedbackVector.end());
+
+    // Push sorted entries back to stack and display
+    vector<string>::iterator it;
+    for (it = feedbackVector.begin(); it != feedbackVector.end(); ++it) {
+        feedbackStack.push(*it);
+        cout << *it << endl << endl;
+    }
+    
+
+  cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    M.mainPage(); 
+
+}
 string Customer::convertDate(const string& date) {
     // Assuming date is in the format DD/MM/YYYY
     string day = date.substr(0, 2);
