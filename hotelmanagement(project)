@@ -1324,6 +1324,157 @@ void booking::cancelBookingByEmail(string emailAddress) {
     M.mainPage();
 }
 
+// Structure to hold booking information
+struct Booking {
+    int roomNumber;
+    string customerName;
+    string checkInDate;
+    int days;
+    string mobileNumber;
+    string email;
+};
+
+// Function to convert date from DD/MM/YYYY to YYYYMMDD format
+string convertDate(const string& date) {
+    string day = date.substr(0, 2);
+    string month = date.substr(3, 2);
+    string year = date.substr(6, 4);
+    return year + month + day;
+}
+
+// Function to perform insertion sort based on room numbers
+void insertionSortByRoomNumber(Booking bookings[], int n) {
+    for (int i = 1; i < n; ++i) {
+        Booking key = bookings[i];
+        int j = i - 1;
+
+        while (j >= 0 && bookings[j].roomNumber > key.roomNumber) {
+            bookings[j + 1] = bookings[j];
+            --j;
+        }
+        bookings[j + 1] = key;
+    }
+}
+
+// Function to perform insertion sort based on customer names (case insensitive)
+void insertionSortByCustomerName(Booking bookings[], int n) {
+    for (int i = 1; i < n; ++i) {
+        Booking key = bookings[i];
+        int j = i - 1;
+
+        // Convert both customer names to lowercase for comparison
+        string keyName = key.customerName;
+        transform(keyName.begin(), keyName.end(), keyName.begin(), ::tolower);
+
+        while (j >= 0) {
+            string currentName = bookings[j].customerName;
+            transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
+            
+            // Compare lowercase versions of names
+            if (currentName > keyName) {
+                bookings[j + 1] = bookings[j];
+                --j;
+            } else {
+                break;
+            }
+        }
+        bookings[j + 1] = key;
+    }
+}
+
+// Function to read current bookings from file and display them
+void displayCurrentBookings(Booking bookings[], int count) {
+    cout << "***********************************************************************" << endl;
+    cout << "============================CURRENT BOOKINGS===========================" << endl;
+    cout << "***********************************************************************" << endl;
+
+    for (int i = 0; i < count; ++i) {
+        cout << "Room Number: " << bookings[i].roomNumber << endl;
+        cout << "Customer Name: " << bookings[i].customerName << endl;
+        cout << "Check-in Date: " << bookings[i].checkInDate << endl;
+        cout << "Number of Days: " << bookings[i].days << endl;
+        cout << "Mobile Number: " << bookings[i].mobileNumber << endl;
+        cout << "Email: " << bookings[i].email << endl;
+        cout << "-----------------------------------------------" << endl;
+    }
+}
+
+// Function to handle current bookings and sort them based on user input
+void checkCurrentBookings() {
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
+    const int MAX_BOOKINGS = 100; 
+    Booking bookings[MAX_BOOKINGS];
+    int count = 0;
+
+    int roomNumber, days;
+    string customerName, checkInDate, mobileNumber, email;
+
+    while (record >> roomNumber >> customerName >> checkInDate >> days >> mobileNumber >> email) {
+        bookings[count].roomNumber = roomNumber;
+        bookings[count].customerName = customerName;
+        bookings[count].checkInDate = checkInDate;
+        bookings[count].days = days;
+        bookings[count].mobileNumber = mobileNumber;
+        bookings[count].email = email;
+        ++count;
+    }
+    record.close();
+
+    // Display current bookings first
+    displayCurrentBookings(bookings, count);
+
+    // Prompt user to choose column for sorting
+    int choice;
+    cout << "\nEnter the column number to sort by:" << endl;
+    cout << "1. Room Number" << endl;
+    cout << "2. Customer Name" << endl;
+    cout << "3. Exit" << endl;
+    cout << "Your choice: ";
+    cin >> choice;
+
+    // Perform insertion sort based on user choice
+    switch (choice) {
+        case 1:
+            insertionSortByRoomNumber(bookings, count);
+            break;
+        case 2:
+            insertionSortByCustomerName(bookings, count);
+            break;
+        case 3: 
+            // Exit or return to main menu logic can be added here
+            break;
+        default:
+            cout << "Invalid choice. Sorting by Room Number by default." << endl;
+            insertionSortByRoomNumber(bookings, count);
+            break;
+    }
+
+    // Display sorted bookings
+    cout << "\n***********************************************************************" << endl;
+    cout << "=========================SORTED BOOKINGS==============================" << endl;
+    cout << "***********************************************************************" << endl;
+
+    for (int i = 0; i < count; ++i) {
+        cout << "Room Number: " << bookings[i].roomNumber << endl;
+        cout << "Customer Name: " << bookings[i].customerName << endl;
+        cout << "Check-in Date: " << bookings[i].checkInDate << endl;
+        cout << "Number of Days: " << bookings[i].days << endl;
+        cout << "Mobile Number: " << bookings[i].mobileNumber << endl;
+        cout << "Email: " << bookings[i].email << endl;
+        cout << "-----------------------------------------------" << endl;
+    }
+
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    M.mainPage(); 
+}
+
 		void menu::mainPage()
 		{
 		            system("cls");
@@ -1342,7 +1493,8 @@ void booking::cancelBookingByEmail(string emailAddress) {
 				    cout<<"[10] CUSTOMER FEEDBACK"<<endl;
 				    cout<<"[11] CHECK CURRENT BOOKINGS"<<endl;
 				    cout<<"[12] CANCEL BOOKING"<<endl;
-				    cout<<"[13] EXIT"<<endl;
+				    cout<<"[13] SORT BOOKINGS (Insertion)"<<endl;
+				    cout<<"[14] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
 				    cin>>Ht->choice;
 				    cin.ignore();
@@ -1430,7 +1582,10 @@ void booking::cancelBookingByEmail(string emailAddress) {
 						            }
 						            break;
 						        }
-						case 13:
+						case 13: system("cls");
+					 	         checkCurrentBookings();
+						         break;
+						case 14:
 								 system("cls");
 								 cout << "***********************************************************************" << endl;
 							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
