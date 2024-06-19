@@ -73,6 +73,12 @@ public:
     void checkCurrentBookings();
     void sortData(bool sortByDate = false); 
 	string convertDate(const string& date);
+    void bill();
+	void searchRecord();
+	void displayRecord();
+	void sortBookings();
+	void customerFeedback();
+	void userMenu();
 } C;
 
 class booking:public Hotel{
@@ -328,38 +334,243 @@ void Customer::changeCusPass() {
     }
 }
 
-void menu::userMenu()
-{
-	system("cls");
-	cout <<"*******************************************************"<< endl;
-	cout<<"===WELCOME TO DOCTER STRANGE HOTEL MANAGEMENT SYSTEM===="<<endl;
-	cout <<"*******************************************************"<< endl;
-	cout<<"[1] CHANGE PASSWORD"<<endl;
-	cout<<"[2] "<<endl;
-	cout<<"[3] Exit"<<endl;
-	
-	cout<<"\nEnter your choice: ";
-	cin>>Ht->choice;
-	cin.ignore();
-	switch(Ht->choice)
-	{
-		case 1: system("cls");
-				cout << "***********************************************************************" << endl;
-			    cout << "=================================CHANGE PASSWORD=======================" << endl;
-				cout << "***********************************************************************" << endl;
-                C.changeCusPass();
-                break;
-		case 2: system("cls");
-				break;
-		case 3: system("cls");
-				H.determineUserType();
-		        break;
-		 default:
-					cout << "Invalid choice. Please try again." << endl;
-					break; 
-	}
+void Customer::userMenu() {
+    int choice;
+    system("cls");
+    cout <<"*******************************************************"<< endl;
+    cout<<"===WELCOME TO DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM===="<<endl;
+    cout <<"*******************************************************"<< endl;
+    cout<<"[1] BILL"<<endl;
+    cout<<"[2] SEARCH RECORD"<<endl;
+    cout<<"[3] DISPLAY RECORD"<<endl;
+    cout<<"[4] SORT BOOKINGS (Insertion)"<<endl;
+    cout<<"[5] CUSTOMER FEEDBACK"<<endl;
+    cout<<"[6] EXIT"<<endl;
+    cout<<"\nEnter your choice: ";
+    cin>>choice;
+   
+    switch(choice) {
+        case 1: 
+            C.bill(); 
+            break;
+        case 2:
+            C.searchRecord(); 
+            break;
+        case 3:
+            C.displayRecord(); 
+            break;
+        case 4:
+            C.sortBookings(); 
+            break;
+        case 5:
+            C.customerFeedback(); 
+            break;
+        case 6:
+            system("cls");
+            H.determineUserType();
+            break;
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+            break;
+    }
 }
 
+void Customer::bill() {
+    system("cls");
+    cout << "*************************************************" << endl;
+    cout << "===================BILL=========================" << endl;
+    cout << "*************************************************" << endl;
+
+    string customerName;
+    cin.ignore();
+    cout << "Enter Customer Name to View Bill: ";
+    getline(cin, customerName); 
+
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening record file." << endl;
+        return;
+    }
+
+    int roomNumber = -1;
+    int existingRoomNum, DAY;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+    bool found = false;
+
+    while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL) {
+        if (CUSNAME == customerName) {
+            roomNumber = existingRoomNum;
+            found = true;
+            break;
+        }
+    }
+
+    record.close();
+
+    if (found) {
+        R.calcBill(roomNumber);
+    } else {
+        cout << "Customer not found or no booking found for customer." << endl;
+    }
+
+    userMenu();
+    
+}
+
+void Customer::searchRecord() {
+    system("cls");
+    cout << "Enter search key: ";
+    string searchKey;
+    getline(cin, searchKey);
+
+    transform(searchKey.begin(), searchKey.end(), searchKey.begin(), ::tolower);
+
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening record file." << endl;
+        return;
+    }
+
+    vector<string> searchResults;
+    int existingRoomNum, DAY;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+
+    while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL) {
+        // Convert fields to lowercase for case-insensitive search
+        string lowerCUSNAME = CUSNAME;
+        string lowerCHECKIN = CHECKIN;
+        string lowerMOBILE = MOBILE;
+        string lowerEMAIL = EMAIL;
+        transform(lowerCUSNAME.begin(), lowerCUSNAME.end(), lowerCUSNAME.begin(), ::tolower);
+        transform(lowerCHECKIN.begin(), lowerCHECKIN.end(), lowerCHECKIN.begin(), ::tolower);
+        transform(lowerMOBILE.begin(), lowerMOBILE.end(), lowerMOBILE.begin(), ::tolower);
+        transform(lowerEMAIL.begin(), lowerEMAIL.end(), lowerEMAIL.begin(), ::tolower);
+
+        // Compare search key with each field
+        if (lowerCUSNAME == searchKey || lowerCHECKIN == searchKey || lowerMOBILE == searchKey || lowerEMAIL == searchKey) {
+            stringstream ss;
+            ss << "\n-------------------------------------------";
+            ss << "\nRoom Number: " << existingRoomNum;
+            ss << "\nCustomer Name: " << CUSNAME;
+            ss << "\nCheck-in Date: " << CHECKIN;
+            ss << "\nMobile: " << MOBILE;
+            ss << "\nEmail: " << EMAIL;
+            ss << "\n-------------------------------------------\n";
+            searchResults.push_back(ss.str());
+        }
+    }
+
+    record.close();
+
+    if (!searchResults.empty()) {
+        cout << "\nSearch Results:" << endl;
+        for (size_t i = 0; i < searchResults.size(); ++i) {
+            cout << searchResults[i] << endl;
+        }
+    } else {
+        cout << "No results found." << endl;
+    }
+
+    cout << "\nPress Enter to return to the main menu: ";
+    cin.get();
+    userMenu();
+}
+
+void Customer::displayRecord() {
+    system("cls");
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening record file." << endl;
+        return;
+    }
+
+    int existingRoomNum, DAY;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+
+    cout << "\nDisplaying all records:\n" << endl;
+    while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL) {
+        cout << "\n-------------------------------------------";
+        cout << "\nRoom Number: " << existingRoomNum;
+        cout << "\nCustomer Name: " << CUSNAME;
+        cout << "\nCheck-in Date: " << CHECKIN;
+        cout << "\nMobile: " << MOBILE;
+        cout << "\nEmail: " << EMAIL;
+        cout << "\n-------------------------------------------";
+    }
+
+    record.close();
+
+    cout << "\nPress Enter to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    userMenu(); // Return to the main menu after displaying records
+}
+
+void Customer::sortBookings() {
+    system("cls");
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening record file." << endl;
+        return;
+    }
+
+    vector<pair<int, string> > bookings; // Store room number and customer name
+    int existingRoomNum, DAY;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+
+    while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL) {
+        bookings.push_back(make_pair(existingRoomNum, CUSNAME));
+    }
+
+    record.close();
+
+    // Perform insertion sort based on room number
+    for (size_t i = 1; i < bookings.size(); ++i) {
+        pair<int, string> key = bookings[i];
+        int j = i - 1;
+
+        while (j >= 0 && bookings[j].first > key.first) {
+            bookings[j + 1] = bookings[j];
+            --j;
+        }
+
+        bookings[j + 1] = key;
+    }
+
+    cout << "\nSorted Bookings (by Room Number):\n" << endl;
+    for (size_t i = 0; i < bookings.size(); ++i) {
+        cout << "Room Number: " << bookings[i].first << ", Customer Name: " << bookings[i].second << endl;
+    }
+
+    cout << "\nPress Enter to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    userMenu(); 
+}
+
+void Customer::customerFeedback() {
+    system("cls");
+    string feedback;
+
+    cout << "Enter your feedback:\n";
+    getline(cin, feedback);
+
+    ofstream feedbackFile("feedback.txt", ios::app);
+    if (!feedbackFile) {
+        cout << "Error opening feedback file." << endl;
+        return;
+    }
+
+    feedbackFile << feedback << endl;
+    feedbackFile.close();
+
+    cout << "\nThank you for your feedback!" << endl;
+
+    cout << "\nPress Enter to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+    userMenu();
+}
 void Hotel::login() {
     string staffID;
     string staffPassword;
