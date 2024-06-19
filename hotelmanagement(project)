@@ -14,27 +14,6 @@
 #include <stack>
 using namespace std;
 	stack<string> feedbackStack;
-class Staff {
-public:
-    void addStaff();
-    void displayStaff();
-    void updateStaff();
-    void changePassword();
-
-
-    struct StaffInfo {
-        int id;
-        string name;
-        string position;
-        string username;
-        string password;
-    };
-
-    vector<StaffInfo> staffList;
-
-    void readData();
-    void saveData();
-};
 class Hotel {
 protected:
     struct Hot {
@@ -55,7 +34,7 @@ public:
     ~Hotel() {
         cout << "Hotel object is being destroyed." << endl;
     }
-
+    void determineUserType(); 
     void login();
     void changePassword();
     friend class Room;
@@ -84,6 +63,10 @@ public:
 
 class Customer : public Hotel {
 public:
+	void hidePassword(string& password);
+	void  registerCustomer();
+	void cusLogin();
+	void loginCustomer();
     void cusInfo();
     void updateCustomer();
     void checkCurrentBookings();
@@ -130,8 +113,178 @@ public:
 class menu:public Hotel{
 	public:
 		void mainPage();
+		void userMenu();
 		void searchMenu();
 }M;
+
+void Hotel::determineUserType() {
+	
+    char userType;
+    cout <<"*******************************************************"<< endl;
+	cout<<"===WELCOME TO DOCTER STRANGE HOTEL MANAGEMENT SYSTEM===="<<endl;
+	cout <<"*******************************************************"<< endl;
+    cout << "Are you an admin (A) or a regular user (U)? ";
+    cin >> userType;
+    cin.ignore(); 
+
+    if (toupper(userType) == 'A') {
+    	system("cls");
+    	cout << "***********************************************************************" << endl;
+    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
+    cout << "***********************************************************************" << endl;
+        login(); 
+    } else if (toupper(userType) == 'U') {
+    	
+        C.cusLogin();
+    } else {
+        cout << "Invalid choice. Please enter 'A' for admin or 'U' for regular user." << endl;
+        determineUserType(); 
+    }
+}
+void Customer::hidePassword(string& password) {
+    password.clear();
+    char ch;
+    while (true) {
+        ch = _getch();
+        if (ch == 13) { 
+            cout << endl;
+            break;
+        } else if (ch == 8) { 
+            if (!password.empty()) {
+                cout << "\b \b";
+                password.resize(password.size() - 1);
+            }
+        } else {
+            password.push_back(ch);
+            cout << '*';
+        }
+    }
+}
+
+void Customer::cusLogin() {
+    char choice;
+    cout << "Do you have an account? (Y/N): ";
+    cin >> choice;
+    cin.ignore();
+
+    if (toupper(choice) == 'Y') {
+        system("cls");
+        cout << "***********************************************************************" << endl;
+        cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
+        cout << "***********************************************************************" << endl;
+        loginCustomer();
+    } else if (toupper(choice) == 'N') {
+        system("cls");
+        cout << "***********************************************************************" << endl;
+        cout << "==============================Registration=============================" << endl;
+        cout << "***********************************************************************" << endl;
+        registerCustomer();
+    } else {
+        cout << "Invalid choice. Please enter 'Y' for yes or 'N' for no." << endl;
+        cusLogin();
+    }
+}
+
+void Customer::registerCustomer() {
+    string customerID;
+    string customerPassword;
+
+    cout << "Enter Customer ID: ";
+    getline(cin, customerID);
+
+    cout << "Enter Customer Password: ";
+    hidePassword(customerPassword);
+
+    ofstream outFile("cuslogin.txt", ios::app);
+    if (!outFile.is_open()) {
+        cout << "Failed to open customer login file for writing." << endl;
+        return;
+    }
+
+    outFile << customerID << " " << customerPassword << endl;
+    outFile.close();
+
+    cout << "Registration successful!" << endl;
+    system("cls");
+    cout << "***********************************************************************" << endl;
+    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
+	cout << "***********************************************************************" << endl;
+    loginCustomer();
+}
+
+void Customer::loginCustomer() {
+    string customerID;
+    string customerPassword;
+
+    bool loginSuccess = false;
+    int attempts = 0;
+    const int maxAttempts = 3;
+
+    do {
+        cout << "Enter Customer ID: ";
+        getline(cin, customerID);
+
+        cout << "Enter Customer Password: ";
+        hidePassword(customerPassword);
+
+        ifstream loginFile("cuslogin.txt");
+        if (!loginFile.is_open()) {
+            cout << "Failed to open customer login file." << endl;
+            return;
+        }
+
+        string storedID, storedPassword;
+        bool success = false;
+        while (loginFile >> storedID >> storedPassword) {
+            if (customerID == storedID && customerPassword == storedPassword) {
+                success = true;
+                break;
+            }
+        }
+        loginFile.close();
+
+        if (success) {
+            cout << "Login successful!" << endl;
+            loginSuccess = true;
+            M.userMenu();
+        } else {
+            cout << "Invalid customer ID or password. Please try again." << endl;
+            attempts++;
+        }
+    } while (!loginSuccess && attempts < maxAttempts);
+
+    if (!loginSuccess) {
+        cout << "Too many failed login attempts. Exiting login process." << endl;
+    }
+}
+
+void menu::userMenu()
+{
+	system("cls");
+	cout <<"*******************************************************"<< endl;
+	cout<<"===WELCOME TO DOCTER STRANGE HOTEL MANAGEMENT SYSTEM===="<<endl;
+	cout <<"*******************************************************"<< endl;
+	cout<<"[1] "<<endl;
+	cout<<"[2] "<<endl;
+	cout<<"[3] Exit"<<endl;
+	
+	cout<<"\nEnter your choice: ";
+	cin>>Ht->choice;
+	cin.ignore();
+	switch(Ht->choice)
+	{
+		case 1: 
+				break;
+		case 2: system("cls");
+				break;
+		case 3: system("cls");
+				H.determineUserType();
+		        break;
+		 default:
+					cout << "Invalid choice. Please try again." << endl;
+					break; 
+	}
+}
 
 void Hotel::login() {
     string staffID;
@@ -1357,7 +1510,7 @@ struct Booking {
     string email;
 };
 
-// Function to convert date from DD/MM/YYYY to YYYYMMDD format
+
 string convertDate(const string& date) {
     string day = date.substr(0, 2);
     string month = date.substr(3, 2);
@@ -1365,7 +1518,7 @@ string convertDate(const string& date) {
     return year + month + day;
 }
 
-// Function to perform insertion sort based on room numbers
+
 void insertionSortByRoomNumber(Booking bookings[], int n) {
     for (int i = 1; i < n; ++i) {
         Booking key = bookings[i];
@@ -1379,13 +1532,12 @@ void insertionSortByRoomNumber(Booking bookings[], int n) {
     }
 }
 
-// Function to perform insertion sort based on customer names (case insensitive)
 void insertionSortByCustomerName(Booking bookings[], int n) {
     for (int i = 1; i < n; ++i) {
         Booking key = bookings[i];
         int j = i - 1;
 
-        // Convert both customer names to lowercase for comparison
+
         string keyName = key.customerName;
         transform(keyName.begin(), keyName.end(), keyName.begin(), ::tolower);
 
@@ -1393,7 +1545,7 @@ void insertionSortByCustomerName(Booking bookings[], int n) {
             string currentName = bookings[j].customerName;
             transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
             
-            // Compare lowercase versions of names
+            
             if (currentName > keyName) {
                 bookings[j + 1] = bookings[j];
                 --j;
@@ -1405,7 +1557,7 @@ void insertionSortByCustomerName(Booking bookings[], int n) {
     }
 }
 
-// Function to read current bookings from file and display them
+
 void displayCurrentBookings(Booking bookings[], int count) {
     cout << "***********************************************************************" << endl;
     cout << "============================CURRENT BOOKINGS===========================" << endl;
@@ -1422,7 +1574,6 @@ void displayCurrentBookings(Booking bookings[], int count) {
     }
 }
 
-// Function to handle current bookings and sort them based on user input
 void checkCurrentBookings() {
     ifstream record("record.txt");
     if (!record) {
@@ -1448,10 +1599,10 @@ void checkCurrentBookings() {
     }
     record.close();
 
-    // Display current bookings first
+  
     displayCurrentBookings(bookings, count);
 
-    // Prompt user to choose column for sorting
+
     int choice;
     cout << "\nEnter the column number to sort by:" << endl;
     cout << "1. Room Number" << endl;
@@ -1460,7 +1611,6 @@ void checkCurrentBookings() {
     cout << "Your choice: ";
     cin >> choice;
 
-    // Perform insertion sort based on user choice
     switch (choice) {
         case 1:
             insertionSortByRoomNumber(bookings, count);
@@ -1477,7 +1627,7 @@ void checkCurrentBookings() {
             break;
     }
 
-    // Display sorted bookings
+
     cout << "\n***********************************************************************" << endl;
     cout << "=========================SORTED BOOKINGS==============================" << endl;
     cout << "***********************************************************************" << endl;
@@ -1630,204 +1780,7 @@ void Room::binarySearch(string searchKey, int option) {
             M.mainPage();
         }
     }
-void Staff::readData() {
-    ifstream file("staff.txt");
-    if (!file) {
-        cout << "Error opening staff file. No staff data found." << endl;
-        return;
-    }
 
-    staffList.clear();
-    StaffInfo staff;
-    while (file >> staff.id >> staff.name >> staff.position >> staff.username >> staff.password) {
-        staffList.push_back(staff);
-    }
-    file.close();
-}
-
-void Staff::saveData() {
-    ofstream file("staff.txt");
-    if (!file) {
-        cout << "Error saving staff data." << endl;
-        return;
-    }
-
-    for (size_t i = 0; i < staffList.size(); ++i) {
-        file << staffList[i].id << " " << staffList[i].name << " " << staffList[i].position << " "
-             << staffList[i].username << " " << staffList[i].password << endl;
-    }
-    file.close();
-}
-
-void Staff::addStaff() {
-    cout << "*******************************************************" << endl;
-    cout << "===================ADD NEW STAFF=======================" << endl;
-    cout << "*******************************************************" << endl;
-
-    StaffInfo newStaff;
-    cout << "Enter Staff ID: ";
-    cin >> newStaff.id;
-    cin.ignore();
-
-    cout << "Enter Staff Name: ";
-    getline(cin, newStaff.name);
-
-    cout << "Enter Staff Position: ";
-    getline(cin, newStaff.position);
-
-    cout << "Enter Username: ";
-    getline(cin, newStaff.username);
-
-    cout << "Enter Password: ";
-    getline(cin, newStaff.password);
-
-    staffList.push_back(newStaff);
-    saveData();
-}
-
-void Staff::displayStaff() {
-    cout << "*******************************************************" << endl;
-    cout << "===================STAFF LIST==========================" << endl;
-    cout << "*******************************************************" << endl;
-
-    if (staffList.empty()) {
-        cout << "No staff data available." << endl;
-        return;
-    }
-
-    for (size_t i = 0; i < staffList.size(); ++i) {
-        cout << "ID: " << staffList[i].id << endl;
-        cout << "Name: " << staffList[i].name << endl;
-        cout << "Position: " << staffList[i].position << endl;
-        cout << "Username: " << staffList[i].username << endl;
-        cout << "Password: " << staffList[i].password << endl;
-        cout << "-------------------------------------------------------" << endl;
-    }
-    cout << "\nPress Enter Y to return to the main menu: ";
-    cin.ignore();
-    cin.get();
-    M.mainPage(); 
-}
-
-void Staff::updateStaff() {
-    cout << "*******************************************************" << endl;
-    cout << "=================UPDATE STAFF DETAILS===================" << endl;
-    cout << "*******************************************************" << endl;
-
-    if (staffList.empty()) {
-        cout << "No staff data available." << endl;
-        return;
-    }
-
-    int idToUpdate;
-    cout << "Enter ID of staff to update: ";
-    cin >> idToUpdate;
-
-    bool found = false;
-    for (size_t i = 0; i < staffList.size(); ++i) {
-        if (staffList[i].id == idToUpdate) {
-            cout << "Enter new Name: ";
-            cin.ignore();
-            getline(cin, staffList[i].name);
-
-            cout << "Enter new Position: ";
-            getline(cin, staffList[i].position);
-
-            cout << "Enter new Username: ";
-            getline(cin, staffList[i].username);
-
-            cout << "Enter new Password: ";
-            getline(cin, staffList[i].password);
-
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        cout << "Staff with ID " << idToUpdate << " not found." << endl;
-    } else {
-        saveData();
-        cout << "Staff details updated successfully." << endl;
-    }
-    
-    cout << "\nPress Enter Y to return to the main menu: ";
-    cin.ignore();
-    cin.get();
-    M.mainPage(); 
-}
-
-void Staff::changePassword() {
-    cout << "*******************************************************" << endl;
-    cout << "===================CHANGE PASSWORD=====================" << endl;
-    cout << "*******************************************************" << endl;
-
-    if (staffList.empty()) {
-        cout << "No staff data available." << endl;
-        return;
-    }
-
-    string username;
-    cout << "Enter Username: ";
-    cin >> username;
-
-    bool found = false;
-    for (size_t i = 0; i < staffList.size(); ++i) {
-        if (staffList[i].username == username) {
-            cout << "Enter new Password: ";
-            cin.ignore();
-            getline(cin, staffList[i].password);
-
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        cout << "Staff with Username " << username << " not found." << endl;
-    } else {
-        saveData();
-        cout << "Password changed successfully." << endl;
-    }
-    cout << "\nPress Enter Y to return to the main menu: ";
-    cin.ignore();
-    cin.get();
-    M.mainPage(); 
-}
-void menu::staffManagement() {
-    int staffChoice;
-    cout << "*******************************************************" << endl;
-    cout << "===================STAFF MANAGEMENT====================" << endl;
-    cout << "*******************************************************" << endl;
-    cout << "[1] Add New Staff" << endl;
-    cout << "[2] View Staff Information" << endl;
-    cout << "[3] Update Staff Information" << endl;
-    cout << "[4] Change Staff Password" << endl;
-    cout << "[5] Back to Main Menu" << endl;
-    cout << "\nEnter your choice: ";
-    cin >> staffChoice;
-
-    switch(staffChoice) {
-        case 1:
-            S.addStaff();
-            break;
-        case 2:
-            S.displayStaff();
-            break;
-        case 3:
-            S.updateStaff();
-            break;
-        case 4:
-            S.changePassword();
-            break;
-        case 5:
-            M.mainPage();
-            break;
-        default:
-            cout << "Invalid choice! Please try again." << endl;
-            break;
-    }
-}
 
 		void menu::mainPage()
 		{
@@ -1849,8 +1802,7 @@ void menu::staffManagement() {
 				    cout<<"[12] CANCEL BOOKING"<<endl;
 				    cout<<"[13] SORT BOOKINGS (Insertion)"<<endl;
 				    cout<<"[14] SEARCHING"<<endl;
-                    cout<<"[15] STAFF MANAGEMENT"<<endl;
-				    cout<<"[16] EXIT"<<endl;
+                    cout<<"[15] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
 				    cin>>Ht->choice;
 				    cin.ignore();
@@ -1890,9 +1842,9 @@ void menu::staffManagement() {
 						case 12: {
 						            int cancelChoice;
 						            system("cls");
-						            cout << "***********************************************************************" << std::endl;
-								    cout << "============================CANCEL BOOKING=============================" << std::endl;
-								    cout << "***********************************************************************" << std::endl;
+						            cout << "***********************************************************************" << endl;
+								    cout << "============================CANCEL BOOKING=============================" << endl;
+								    cout << "***********************************************************************" << endl;
 						            cout << "How do you want to cancel the booking?" << endl;
 						            cout << "1. By Room Number" << endl;
 						            cout << "2. By Mobile Number" << endl;
@@ -1944,21 +1896,13 @@ void menu::staffManagement() {
 						case 14: system("cls");
 						            M.searchMenu();
 						            break;
-						        	default:
+						        	
+						case 15:
+								 H.determineUserType();
+						         break;
+						default:
 							            cout << "Invalid choice. Please try again." << endl;
 							        break;
-                        case 15: system("cls");
-                                 staffManagement();
-                                 break;
-						case 16:
-								 system("cls");
-								 cout << "***********************************************************************" << endl;
-							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
-							    cout << "***********************************************************************" << endl;
-								 H.login();
-								 Ht->password.clear();
-								 M.mainPage();
-						         break;
 						         
 					}
 		}
@@ -1966,10 +1910,8 @@ void menu::staffManagement() {
 int main() {
     Hotel* H = new Hotel();
     system("color 5f");
-    cout << "***********************************************************************" << endl;
-    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
-    cout << "***********************************************************************" << endl;
-    H->login();
+    H->determineUserType();
+    
     delete H;
     return 0;
 }
