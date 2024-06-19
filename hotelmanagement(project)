@@ -1,138 +1,172 @@
-	#include<iostream>
-		#include<fstream>
-		#include<cstring>
-		#include<iomanip>
-		#include <conio.h>
-		#include<string.h>
-		#include <stack>
-		#include <sstream> 
-		#include <algorithm>
-		#include <vector>
-		using namespace std;
-		stack<string> feedbackStack;
-		
-		class Hotel
-		{
-			protected:
-				struct Hot
-				{
-					string cusName;
-					string staffId;
-					string password;
-					int choice;
-					char back;
-				}Ht;
-			public:
-				Hotel()
-				{
-					Ht.choice=0;
-				}
-				~Hotel()
-				{
-					cout << "Hotel object is being destroyed." <<endl;
-				}
-				void logIn()
-		{
-		    string staffID;
-		    string staffPassword;
-		    int count = 0;
-		
-		    do
-		    {
-		        cout << "Enter Staff ID: ";
-		        getline(cin, Ht.staffId);
-		        cout << "Enter Staff Password: ";
-		
-		        char ch;
-		        int i = 0;
-		
-		        while (true)
-		        {
-		            ch = _getch();
-		
-		            if (ch == 13)
-		            {
-		                break;
-		            }
-		            else if (ch == 8)
-		            {
-		                if (i > 0)
-		                {
-		                    cout << "\b \b";
-		                    Ht.password.erase();
-		                    i--;
-		                }
-		            }
-		            else
-		            {
-		                Ht.password.push_back(ch);
-		                cout << '*';
-		                i++;
-		            }
-		        }
-		
-		        ifstream login("login.txt");
-		
-		        while (login >> staffID >> staffPassword)
-		        {
-		            if (staffID == Ht.staffId && Ht.password == staffPassword)
-		            {
-		                count = 1;
-		                system("cls");
-		            }
-		        }
-		
-		        login.close();
-		
-		        if (count == 1)
-		        {
-		            mainPage();
-		        }
-		        else
-		        {
-		            cout << "\nInvalid staff id or password. Please try again..\n" << endl;
-		        }
-		
-		
-		        Ht.password.clear();
-		        count++;
-		
-		    } while (count < 3);
-		}
-						void mainPage();
-						void changePassword();
-						friend class Room;
-						friend class Customer;
-		
-		}H;
-		
-		class Room : public Hotel
-		{
-			private:
-				int roomNum;
-				string email;
-				string checkIn;
-				string mobileNum;
-				int day;
-			public:
-				void newBooking();
-				bool isRoomBooked(int roomNumber);
-				void calcBill(int roomNumber);
-				void roomInfo();
-				void viewRoomStatus();
-				void checkOut();
-				void oldRecord();
-				void feedback();
-		}R;
-		class Customer:public Hotel
-		{
-			public:
-				void cusInfo();
-				void updateCustomer();
-		}C;
+#include<iostream>
+#include<fstream>
+#include<cstring>
+#include<iomanip>
+#include <conio.h>
+#include<string.h>
+#include<vector>
+#include <cmath>
+#include <algorithm>
+#include <cctype>
+#include <cstdlib> 
+#include <string>
+#include <sstream>
+
+using namespace std;
+
+class Hotel {
+protected:
+    struct Hot {
+        string cusName;
+        string staffId;
+        string password;
+        int choice;
+        char back;
+    };
+	Hot* Ht;
+
+public:
+    Hotel() {
+    	Ht = new Hot;
+        Ht->choice = 0;
+    }
+
+    ~Hotel() {
+        cout << "Hotel object is being destroyed." << endl;
+    }
+
+    void login();
+    void changePassword();
+    friend class Room;
+    friend class Customer;
+    friend class booking;
+    friend class menu;
+}H;
+
+class Room : public Hotel {
+private:
+    int roomNum;
+    string email;
+    string checkIn;
+    string mobileNum;
+    int day;
+
+public:
+    void calcBill(int roomNumber);
+    void roomInfo();
+    void viewRoomStatus();
+    void checkOut();
+    void oldRecord();
+    void feedback();
+} R;
+
+class Customer : public Hotel {
+public:
+    void cusInfo();
+    void updateCustomer();
+    void checkCurrentBookings();
+    void sortData(bool sortByDate = false); 
+	string convertDate(const string& date);
+} C;
+
+class booking:public Hotel{
+	private:
+    struct BookingInfo {
+        int bookingID;
+        int roomNum;
+        string email;
+        string checkIn;
+        string mobileNum;
+        int day;
+    };
+	BookingInfo *book;
+    
+	public:
+		 booking() {
+           book = new BookingInfo;
+	    }
 	
-		
-		void Room::newBooking()
+	    ~booking() {
+	        delete book;
+	    }
+		void newBooking();
+		bool isRoomBooked(int roomNumber);
+		 void cancelBooking(int roomNumber);
+    void cancelBooking(string customerName);
+    void cancelBooking(long long mobileNumber);
+    void cancelBookingByEmail(string emailAddress);
+}bo;
+
+class Bill {
+public:
+    void calculateBill(int roomNumber);
+    void calculateBill(int roomNumber, int numberOfDays);
+    void calculateBill(int roomNumber, int numberOfDays, double discountRate);
+    void calculateBill();
+};
+
+class menu:public Hotel{
+	public:
+		void mainPage();
+}M;
+
+void Hotel::login() {
+    string staffID;
+    string staffPassword;
+    int attempt = 0;
+    const int max_attempts = 3;
+
+    do {
+        cout << "Enter Staff ID: ";
+        getline(cin, Ht->staffId);
+        cout << "Enter Staff Password: ";
+
+        Ht->password.clear();
+        char ch;
+        while (true) {
+            ch = _getch();
+            if (ch == 13) {  
+                break;
+            } else if (ch == 8) {  
+                if (!Ht->password.empty()) {
+                    cout << "\b \b";  
+                    Ht->password.erase(Ht->password.size() - 1);  
+                }
+            } else {
+                Ht->password.push_back(ch);
+                cout << '*';
+            }
+        }
+        cout << endl;
+
+        ifstream loginFile("login.txt");
+        if (!loginFile.is_open()) {
+            cout << "Failed to open login file." << endl;
+            return;
+        }
+
+        bool success = false;
+        while (loginFile >> staffID >> staffPassword) {
+            if (staffID == Ht->staffId && Ht->password == staffPassword) {
+                success = true;
+                break;
+            }
+        }
+        loginFile.close();
+
+        if (success) {
+            system("cls");
+            M.mainPage();
+            return;  
+        } else {
+            cout << "\nInvalid staff ID or password. Please try again..\n" << endl;
+            attempt++;
+        }
+    } while (attempt < max_attempts);
+
+    cout << "Too many failed login attempts. Exiting program.\n";
+}
+void booking::newBooking()
 		{
 		    char selection;
 		    system("cls");
@@ -145,10 +179,10 @@
 			string CUSNAME, CHECKIN, MOBILE, EMAIL;
 			int ROOMNUM, DAY;
 			const int totalRooms = 20;
-		    bool roomAvai[totalRooms + 1] = { false }; //set all rooms to be unavailable
+		    bool roomAvai[totalRooms + 1] = { false }; 
 			while (record >> existingRoomNum >> CUSNAME >> CHECKIN >> DAY >> MOBILE >> EMAIL)
 			{
-				roomAvai[existingRoomNum] = true; //set the room to be available
+				roomAvai[existingRoomNum] = true; 
 			}
 			record.close();
 			cout<<"======================== ROOM STATUS ======================="<<endl;
@@ -170,44 +204,44 @@
 		    }
 	
 		        cout << "\nEnter Room Number: ";
-		        cin >> roomNum;
+		        cin >> book->roomNum;
 		        cin.ignore();
-		        while (isRoomBooked(roomNum))
+		        while (isRoomBooked(book->roomNum))
 		        {
-		            cout << "Room number " << roomNum << " is already booked." << endl;
+		            cout << "Room number " << book->roomNum << " is already booked." << endl;
 		            cout << "\nPlease enter another room number: ";
-		            cin >> roomNum;
+		            cin >> book->roomNum;
 		            cin.ignore();
 		        }
-		        cout << "\nRoom number " << roomNum << " is available for booking." << endl;
+		        cout << "\nRoom number " << book->roomNum << " is available for booking." << endl;
 		        cout << "\nEnter Name: ";
-		        getline(cin, Ht.cusName);
+		        getline(cin, Ht->cusName);
 		        cout << "Enter Check-in Date: ";
-		        getline(cin, checkIn);
+		        getline(cin, book->checkIn);
 		        cout << "Enter number of days: ";
-		        cin >> day;
+		        cin >> book->day;
 		        cout << "Enter Mobile Number: ";
 		        cin.ignore();
-		        getline(cin, mobileNum);
+		        getline(cin, book->mobileNum);
 		        cout << "Enter Email: ";
-		        getline(cin, email);
+		        getline(cin, book->email);
 		        ofstream recordOut("record.txt", ios::app);
 		        if (!recordOut)
 		        {
 		            cout << "File cannot exist!" << endl;
 		            exit(1);
 		        }
-		        recordOut << "\n"<<roomNum << " " << Ht.cusName << " " << checkIn << " " << day << " " << mobileNum << " " << email << " " << endl;
+		        recordOut << "\n"<<book->roomNum << " " << Ht->cusName << " " << book->checkIn << " " << book->day << " " << book->mobileNum << " " << book->email << " " << endl;
 		        recordOut.close();
 		        cout << "\nSuccessfully Booking!" << endl;
 		        cout << "\nPress Enter Y to return to the main menu: ";
-		        cin >> Ht.back;
-		        if (Ht.back == 'Y' || Ht.back == 'y')
+		        cin >> Ht->back;
+		        if (Ht->back == 'Y' || Ht->back == 'y')
 		        {
-		            H.mainPage();
+		            M.mainPage();
 		        }
 		}
-		bool Room::isRoomBooked(int roomNumber)
+		bool booking::isRoomBooked(int roomNumber)
 		{
 		    ifstream record("record.txt");
 		    int existingRoomNum;
@@ -249,24 +283,23 @@
 				    cout<<"Paid Sucessfully!"<<endl;
 				    cout << "\nPress Enter Y to return to the main menu: ";
 		            cin.ignore();
-		            cin>>Ht.back;
-		            while (Ht.back == 'Y' || Ht.back == 'y')
+		            cin>>Ht->back;
+		            while (Ht->back == 'Y' || Ht->back == 'y')
 		            {
-		                H.mainPage();
+		                M.mainPage();
 		            }
 		            break;
 		        }
 		    }
-		    //room is not found, display error message
 		    if (record.eof())
 		    {
 		        cout << "Booking Record Not Found!" << endl;
 		        cout << "\nPress Enter Y to return to the main menu: ";
 		        cin.ignore();
-		        cin>>Ht.back;
-		        while (Ht.back == 'Y' || Ht.back == 'y')
+		        cin>>Ht->back;
+		        while (Ht->back == 'Y' || Ht->back == 'y')
 		        {
-		            H.mainPage();
+		            M.mainPage();
 		        }
 		    }
 		    record.close();
@@ -304,10 +337,10 @@
 		        cout << "======================================================================" << endl;
 		        cout << "\nPress Enter Y to return to the main menu: ";
 		        cin.ignore();
-		        cin >> Ht.back;
-		        while (Ht.back == 'Y' || Ht.back == 'y')
+		        cin >> Ht->back;
+		        while (Ht->back == 'Y' || Ht->back == 'y')
 		        {
-		            H.mainPage();
+		            M.mainPage();
 		        }
 		    }
 		    else
@@ -315,10 +348,10 @@
 		        cout << "Room Information Not Found!" << endl;
 		        cout << "\nPress Enter to return Y to the main menu: ";
 		        cin.ignore();
-		        cin >> Ht.back;
-		        while (Ht.back == 'Y' || Ht.back == 'y')
+		        cin >> Ht->back;
+		        while (Ht->back == 'Y' || Ht->back == 'y')
 		        {
-		            H.mainPage();
+		            M.mainPage();
 		        }
 		    }
 		}
@@ -356,10 +389,10 @@
 		        cout << "======================================================================" << endl;
 		        cout << "\nPress Enter Y to return  to the main menu: ";
 		        cin.ignore();
-		        cin >> Ht.back;
-		        while (Ht.back == 'Y' || Ht.back == 'y')
+		        cin >> Ht->back;
+		        while (Ht->back == 'Y' || Ht->back == 'y')
 		        {
-		            H.mainPage();
+		            M.mainPage();
 		        }
 		    }
 		    else
@@ -367,10 +400,10 @@
 		        cout << "Room Information Not Found!" << endl;
 		        cout << "\nPress Enter to return Y to the main menu: ";
 		        cin.ignore();
-		        cin >> Ht.back;
-		        while (Ht.back == 'Y' || Ht.back == 'y')
+		        cin >> Ht->back;
+		        while (Ht->back == 'Y' || Ht->back == 'y')
 		        {
-		            H.mainPage();
+		            M.mainPage();
 		        }
 		    }
 		}
@@ -408,10 +441,10 @@
 		        cout <<"======================================================================="<<endl;
 		        cout << "\nPress Enter Y to return to the main menu: ";
 		        cin.ignore();
-		        cin >> Ht.back;
-		        while (Ht.back == 'Y' || Ht.back == 'y')
+		        cin >> Ht->back;
+		        while (Ht->back == 'Y' || Ht->back == 'y')
 		        {
-		            H.mainPage();
+		            M.mainPage();
 		        }  
 		}
 	
@@ -482,11 +515,11 @@
 	
 	    cout << "\nPress Enter Y to return to the main menu: ";
 	    cin.ignore();
-	    cin >> Ht.back;
+	    cin >> Ht->back;
 	
-	    while (Ht.back == 'Y' || Ht.back == 'y')
+	    while (Ht->back == 'Y' || Ht->back == 'y')
 	    {
-	        H.mainPage();
+	        M.mainPage();
 	    }
 	}
 	
@@ -564,14 +597,14 @@
 	
 	    cout << "\nPress Enter Y to return to the main menu: ";
 	    cin.ignore();
-	    cin >> Ht.back;
+	    cin >> Ht->back;
 	
-	    while (Ht.back == 'Y' || Ht.back == 'y')
+	    while (Ht->back == 'Y' || Ht->back == 'y')
 	    {
-	        H.mainPage();
+	        M.mainPage();
 	    }
 	}
-	
+
 	void Room::oldRecord()
 	{
 	    system("cls");
@@ -600,11 +633,11 @@
 	    }
 	
 	    cout << "\nPress Enter Y to return to the main menu: ";
-	    cin >> Ht.back;
+	    cin >> Ht->back;
 	
-	    while (Ht.back == 'Y' || Ht.back == 'y')
+	    while (Ht->back == 'Y' || Ht->back == 'y')
 	    {
-	        H.mainPage();
+	        M.mainPage();
 	    }
 	}
 	
@@ -618,7 +651,7 @@
     cout << "***********************************************************************" << endl;
 
     cout << "Enter Staff ID: ";
-    cin >> Ht.staffId;
+    cin >> Ht->staffId;
 
     cout << "Enter Your Password: ";
     char ch;
@@ -636,13 +669,13 @@
             if (i > 0)
             {
                 cout << "\b \b";
-                Ht.password.erase();
+                Ht->password.erase();
                 i--;
             }
         }
         else
         {
-            Ht.password.push_back(ch);
+            Ht->password.push_back(ch);
             cout << '*';
             i++;
         }
@@ -662,10 +695,10 @@
 
     bool found = false;
 
-    // Copy login file content to a temporary file
+
     while (loginIn >> staffID >> staffPassword)
     {
-        if (staffID == Ht.staffId)
+        if (staffID == Ht->staffId)
         {
             found = true;
             cout << "\nEnter New Password: ";
@@ -698,8 +731,7 @@
             tempFile << staffID << " " << newPassword << endl;
             cout << "\nPassword changed successfully!" << endl;
 
-            // Update the password variable
-            Ht.password = newPassword;
+            Ht->password = newPassword;
         }
         else
         {
@@ -710,7 +742,6 @@
     loginIn.close();
     tempFile.close();
 
-    // Replace the original login file with the temporary file
     remove("login.txt");
     rename("temp.txt", "login.txt");
 
@@ -723,85 +754,544 @@
     cin.ignore();
     cin.get();
 
-    mainPage();
+    M.mainPage();
 }
-void Room::feedback() {
-    system("cls");
 
-    int roomNumber;
-    char feedback[200];
 
-    cout << "**************************************************************" << endl;
-    cout << "========================CUSTOMER FEEDBACK======================" << endl;
-    cout << "**************************************************************" << endl;
+	 void Room::feedback() 
+	 {
+	    system("cls");
+	
+	    int roomNumber;
+	    string feedback;
+	
+	    cout << "**************************************************************" << endl;
+	    cout << "========================CUSTOMER FEEDBACK======================" << endl;
+	    cout << "**************************************************************" << endl;
+	
+	    cout << "Enter Room Number: ";
+	    cin >> roomNumber;
+	
+	    cin.ignore(); 
+	
+	    cout << "Enter Feedback: ";
+	    getline(cin, feedback);
+	
+	    ofstream feedbackFile("feedback.txt", ios::app);
+	
+	    if (!feedbackFile) {
+	        cout << "Error opening the feedback file." << endl;
+	        exit(1);
+	    }
+	
+	    feedbackFile <<"Room Number : "<<roomNumber<<"\nFeedback:"<< setw(30) << feedback << endl<<endl;
+	
+	    feedbackFile.close();
+	
+	    cout << "Feedback submitted successfully!" << endl;
+	
+	    cout << "Press Enter Y to return to the main menu: ";
+	    cin >> Ht->back;
+	  
+	    if (Ht->back == 'Y' || Ht->back == 'y')
+	    {
+	        M.mainPage(); 
+	    }
+	}
 
-    cout << "Enter Room Number (1-20): ";
-    cin >> roomNumber;
-    cin.ignore();
+string Customer::convertDate(const string& date) {
+    // Assuming date is in the format DD/MM/YYYY
+    string day = date.substr(0, 2);
+    string month = date.substr(3, 2);
+    string year = date.substr(6, 4);
+    return year + month + day;
+}
 
-    if (roomNumber < 1 || roomNumber > 20) {
-        cout << "Invalid room number. Please enter a number between 1 and 20." << endl;
-        cout << "Press Enter to return to the main menu.";
-        cin.get();
-        H.mainPage();
+void radixSortDates(vector<string>& dates, vector<int>& roomNumbers, vector<string>& names, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
+    int maxLen = 8; // Since the converted date format is "YYYYMMDD"
+
+    for (int exp = maxLen - 1; exp >= 0; exp--) {
+        vector<int> count(256, 0);
+
+        for (int i = 0; i < dates.size(); i++)
+            count[(unsigned char)dates[i][exp]]++;
+
+        for (int i = 1; i < 256; i++)
+            count[i] += count[i - 1];
+
+        vector<string> output(dates.size());
+        vector<int> tempRoomNumbers(dates.size());
+        vector<string> tempNames(dates.size());
+        vector<int> tempDays(dates.size());
+        vector<string> tempMobileNumbers(dates.size());
+        vector<string> tempEmails(dates.size());
+
+        for (int i = dates.size() - 1; i >= 0; i--) {
+            int pos = count[(unsigned char)dates[i][exp]] - 1;
+            output[pos] = dates[i];
+            tempRoomNumbers[pos] = roomNumbers[i];
+            tempNames[pos] = names[i];
+            tempDays[pos] = days[i];
+            tempMobileNumbers[pos] = mobileNumbers[i];
+            tempEmails[pos] = emails[i];
+            count[(unsigned char)dates[i][exp]]--;
+        }
+
+        for (int i = 0; i < dates.size(); i++) {
+            dates[i] = output[i];
+            roomNumbers[i] = tempRoomNumbers[i];
+            names[i] = tempNames[i];
+            days[i] = tempDays[i];
+            mobileNumbers[i] = tempMobileNumbers[i];
+            emails[i] = tempEmails[i];
+        }
+    }
+    
+}
+
+void radixSort(vector<int>& arr, vector<string>& names, vector<string>& checkInDates, vector<int>& days, vector<string>& mobileNumbers, vector<string>& emails) {
+    int maxVal = *max_element(arr.begin(), arr.end());
+
+    for (int exp = 1; maxVal / exp > 0; exp *= 10) {
+        vector<int> count(10, 0);
+
+        for (int i = 0; i < arr.size(); i++)
+            count[(arr[i] / exp) % 10]++;
+
+        for (int i = 1; i < 10; i++)
+            count[i] += count[i - 1];
+
+        vector<int> output(arr.size());
+        vector<string> tempNames(arr.size());
+        vector<string> tempCheckInDates(arr.size());
+        vector<int> tempDays(arr.size());
+        vector<string> tempMobileNumbers(arr.size());
+        vector<string> tempEmails(arr.size());
+
+        for (int i = arr.size() - 1; i >= 0; i--) {
+            int pos = count[(arr[i] / exp) % 10] - 1;
+            output[pos] = arr[i];
+            tempNames[pos] = names[i];
+            tempCheckInDates[pos] = checkInDates[i];
+            tempDays[pos] = days[i];
+            tempMobileNumbers[pos] = mobileNumbers[i];
+            tempEmails[pos] = emails[i];
+            count[(arr[i] / exp) % 10]--;
+        }
+
+        for (int i = 0; i < arr.size(); i++) {
+            arr[i] = output[i];
+            names[i] = tempNames[i];
+            checkInDates[i] = tempCheckInDates[i];
+            days[i] = tempDays[i];
+            mobileNumbers[i] = tempMobileNumbers[i];
+            emails[i] = tempEmails[i];
+        }
+    }
+}
+
+void Customer::checkCurrentBookings() {
+    Hotel H;
+    int choice;
+
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening file." << endl;
         return;
     }
 
-    cout << "Enter Feedback: ";
-    cin.getline(feedback, sizeof(feedback));
+    int roomNumber;
+    string customerName, checkInDate, mobileNumber, email;
+    int day;
 
-    ofstream feedbackFile("feedback.txt", ios::app);
-    if (!feedbackFile) {
-        cout << "Error opening the feedback file." << endl;
+    cout << "***********************************************************************" << endl;
+    cout << "============================CURRENT BOOKINGS===========================" << endl;
+    cout << "***********************************************************************" << endl;
+    cout << "*****************************ORIGINAL DATA******************************" << endl;
+    while (record >> roomNumber >> customerName >> checkInDate >> day >> mobileNumber >> email) {
+        cout << "\nRoom Number: " << roomNumber << endl;
+        cout << "Customer Name: " << customerName << endl;
+        cout << "Check-in Date: " << checkInDate << endl;
+        cout << "Number of Days: " << day << endl;
+        cout << "Mobile Number: " << mobileNumber << endl;
+        cout << "Email: " << email << endl;
+        cout << "-----------------------------------------------" << endl;
+    }
+
+    record.close();
+
+    cout<<"\n**************"<<endl;
+    cout<<"Radix sort by: "<<endl;
+    cout<<"**************"<<endl;
+    cout << "\n1. Room Number" << endl;
+    cout << "2. Check-in Date" << endl;
+    cout << "3. Back to previous page" << endl;
+    cout << "Enter your choice: ";
+    cin >> choice;
+
+    switch (choice) {
+        case 1:
+            system("cls");
+            cout << "***********************************************************************" << endl;
+            cout << "============================CURRENT BOOKINGS===========================" << endl;
+            cout << "***********************************************************************" << endl;
+            cout << "************************RADIX SORTED BY ROOM NUMBER********************" << endl;
+            sortData();
+            break;
+        case 2:
+            system("cls");
+            cout << "***********************************************************************" << endl;
+            cout << "============================CURRENT BOOKINGS===========================" << endl;
+            cout << "***********************************************************************" << endl;
+            cout << "******************RADIX SORTED DATA BY CHECK IN DATE*******************" << endl;
+            sortData(true); 
+            break;
+        case 3:
+            M.mainPage();
+            break;
+        default:
+            cout << "You are entered wrong choice. Please enter choice again: ";
+            cin >> choice;
+    }
+    
+}
+
+void Customer::sortData(bool sortByDate) { 
+    ifstream record("record.txt");
+    if (!record) {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
+    record.seekg(0, ios::end);
+    if (record.tellg() == 0) {
+        cout << "No records found." << endl;
+        record.close();
+        return;
+    }
+    record.seekg(0, ios::beg);
+
+    vector<int> roomNumbers;
+    vector<string> customerNames;
+    vector<string> checkInDates;
+    vector<int> days;
+    vector<string> mobileNumbers;
+    vector<string> emails;
+
+    int roomNumber;
+    string customerName, checkInDate, mobileNumber, email;
+    int day;
+
+    while (record >> roomNumber >> customerName >> checkInDate >> day >> mobileNumber >> email) {
+        roomNumbers.push_back(roomNumber);
+        customerNames.push_back(customerName);
+        checkInDates.push_back(checkInDate);
+        days.push_back(day);
+        mobileNumbers.push_back(mobileNumber);
+        emails.push_back(email);
+    }
+    record.close();
+
+    if (sortByDate) {
+        vector<string> convertedDates(checkInDates.size());
+        for (int i = 0; i < checkInDates.size(); ++i) {
+            convertedDates[i] = convertDate(checkInDates[i]);
+        }
+        radixSortDates(convertedDates, roomNumbers, customerNames, days, mobileNumbers, emails);
+        for (int i = 0; i < checkInDates.size(); ++i) {
+            checkInDates[i] = convertedDates[i].substr(6, 2) + "/" + convertedDates[i].substr(4, 2) + "/" + convertedDates[i].substr(0, 4);
+        }
+    } else {
+        radixSort(roomNumbers, customerNames, checkInDates, days, mobileNumbers, emails);
+    }
+
+    for (int i = 0; i < roomNumbers.size(); ++i) {
+        cout << "Room Number: " << roomNumbers[i] << endl;
+        cout << "Customer Name: " << customerNames[i] << endl;
+        cout << "Check-in Date: " << checkInDates[i] << endl;
+        cout << "Number of Days: " << days[i] << endl;
+        cout << "Mobile Number: " << mobileNumbers[i] << endl;
+        cout << "Email: " << emails[i] << endl;
+        cout << "-----------------------------------------------" << endl;
+    }
+		cout << "\nPress Enter Y to return to the main menu: ";
+		cin.ignore();
+		cin>>Ht->back;
+		while (Ht->back == 'Y' || Ht->back == 'y')
+		{
+			system("cls");
+			cout<<endl;
+			C.checkCurrentBookings();
+	   }
+    
+}
+
+void booking::cancelBooking(int roomNumber) {
+    system("cls");
+    bool found = false;
+
+    cout << "***********************************************************************" << endl;
+    cout << "============================CANCEL BOOKING=============================" << endl;
+    cout << "***********************************************************************" << endl;
+
+    ifstream recordIn("record.txt");
+    ofstream tempFile("temp.txt");
+    ofstream cancelFile("cancelbooking.txt", ios::app); 
+
+    if (!recordIn || !tempFile || !cancelFile) {
+        cout << "Error opening files." << endl;
         exit(1);
     }
 
-    // Convert roomNumber to a character array
-    char roomNumberStr[3];
-    sprintf(roomNumberStr, "%d", roomNumber);
+    int existingRoomNum, day;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
 
-    // Construct feedback entry
-    char feedbackEntry[250];
-    sprintf(feedbackEntry, "Room Number: %s\nFeedback: %s", roomNumberStr, feedback);
+    while (recordIn >> existingRoomNum >> CUSNAME >> CHECKIN >> day >> MOBILE >> EMAIL) {
+        if (existingRoomNum == roomNumber) {
+            found = true;
+            cout << "\nCustomer Information:\n";
+            cout << "Room Number: " << existingRoomNum << endl;
+            cout << "Customer Name: " << CUSNAME << endl;
+            cout << "Check-In Date: " << CHECKIN << endl;
+            cout << "Number of Days: " << day << endl;
+            cout << "Mobile Number: " << MOBILE << endl;
+            cout << "Email: " << EMAIL << endl;
 
-    // Push feedback entry onto stack
-    feedbackStack.push(feedbackEntry);
+            cout << "\nDo you want to cancel this booking [Y/N]? ";
+            char confirm;
+            cin >> confirm;
 
-    // Write feedback entry to file
-    feedbackFile << feedbackEntry << endl << endl;
-    feedbackFile.close();
-
-    cout << "Feedback submitted successfully!" << endl;
-    cout << "**************************************************************" << endl;
-    cout << "========================ALL FEEDBACK==========================" << endl;
-    cout << "**************************************************************" << endl;
-
-    // Use vector to store feedback temporarily for sorting
-    vector<string> feedbackVector;
-    while (!feedbackStack.empty()) {
-        feedbackVector.push_back(feedbackStack.top());
-        feedbackStack.pop();
+            if (confirm == 'Y' || confirm == 'y') {
+                cancelFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+                cout << "Booking canceled successfully!" << endl;
+            } else {
+                cout << "Booking cancellation aborted." << endl;
+                tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+            }
+        } else {
+            tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+        }
     }
 
-    // Sort feedback entries by room number
-    sort(feedbackVector.begin(), feedbackVector.end());
+    recordIn.close();
+    tempFile.close();
+    cancelFile.close();
 
-    // Push sorted entries back to stack and display
-    vector<string>::iterator it;
-    for (it = feedbackVector.begin(); it != feedbackVector.end(); ++it) {
-        feedbackStack.push(*it);
-        cout << *it << endl << endl;
+    remove("record.txt");
+    rename("temp.txt", "record.txt");
+
+    if (!found) {
+        cout << "Booking for Room Number " << roomNumber << " not found." << endl;
     }
 
-    cout << "Press Enter Y to return to the main menu: ";
-    cin >> Ht.back;
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
 
-    if (Ht.back == 'Y' || Ht.back == 'y') {
-        H.mainPage(); 
-    }
+    M.mainPage();
 }
 
-		void Hotel::mainPage()
+void booking::cancelBooking(string customerName) {
+    system("cls");
+    bool found = false;
+
+    cout << "***********************************************************************" << endl;
+    cout << "============================CANCEL BOOKING=============================" << endl;
+    cout << "***********************************************************************" << endl;
+
+    ifstream recordIn("record.txt");
+    ofstream tempFile("temp.txt");
+    ofstream cancelFile("cancelbooking.txt", ios::app);
+
+    if (!recordIn || !tempFile || !cancelFile) {
+        cout << "Error opening files." << endl;
+        exit(1);
+    }
+
+    int existingRoomNum, day;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+
+    while (recordIn >> existingRoomNum >> CUSNAME >> CHECKIN >> day >> MOBILE >> EMAIL) {
+        if (CUSNAME == customerName) {
+            found = true;
+            cout << "\nCustomer Information:\n";
+            cout << "Room Number: " << existingRoomNum << endl;
+            cout << "Customer Name: " << CUSNAME << endl;
+            cout << "Check-In Date: " << CHECKIN << endl;
+            cout << "Number of Days: " << day << endl;
+            cout << "Mobile Number: " << MOBILE << endl;
+            cout << "Email: " << EMAIL << endl;
+
+            cout << "\nDo you want to cancel this booking [Y/N]? ";
+            char confirm;
+            cin >> confirm;
+
+            if (confirm == 'Y' || confirm == 'y') {
+                cancelFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+                cout << "Booking canceled successfully!" << endl;
+            } else {
+                cout << "Booking cancellation aborted." << endl;
+                tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+            }
+        } else {
+            tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+        }
+    }
+
+    recordIn.close();
+    tempFile.close();
+    cancelFile.close();
+
+    remove("record.txt");
+    rename("temp.txt", "record.txt");
+
+    if (!found) {
+        cout << "Booking for Customer " << customerName << " not found." << endl;
+    }
+
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+
+    M.mainPage();
+}
+
+
+
+
+void booking::cancelBooking(long long mobileNumber) {
+    system("cls");
+    bool found = false;
+
+    cout << "***********************************************************************" << endl;
+    cout << "============================CANCEL BOOKING=============================" << endl;
+    cout << "***********************************************************************" << endl;
+
+    ifstream recordIn("record.txt");
+    ofstream tempFile("temp.txt");
+    ofstream cancelFile("cancelbooking.txt", ios::app);
+
+    if (!recordIn || !tempFile || !cancelFile) {
+        cout << "Error opening files." << endl;
+        exit(1);
+    }
+
+    int existingRoomNum, day;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+
+    while (recordIn >> existingRoomNum >> CUSNAME >> CHECKIN >> day >> MOBILE >> EMAIL) {
+        // Convert MOBILE to long long assuming MOBILE is stored as string in record.txt
+        long long storedMobile; 
+        istringstream(MOBILE) >> storedMobile;
+        if (storedMobile == mobileNumber) {
+            found = true;
+            cout << "\nCustomer Information:\n";
+            cout << "Room Number: " << existingRoomNum << endl;
+            cout << "Customer Name: " << CUSNAME << endl;
+            cout << "Check-In Date: " << CHECKIN << endl;
+            cout << "Number of Days: " << day << endl;
+            cout << "Mobile Number: " << MOBILE << endl;
+            cout << "Email: " << EMAIL << endl;
+			cout << "\nDo you want to cancel this booking [Y/N]? ";
+            char confirm;
+            cin >> confirm;
+
+            if (confirm == 'Y' || confirm == 'y') {
+                cancelFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+                cout << "Booking canceled successfully!" << std::endl;
+            } else {
+                cout << "Booking cancellation aborted." << std::endl;
+                tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+            }
+        } else {
+            tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+        }
+    }
+
+    recordIn.close();
+    tempFile.close();
+    cancelFile.close();
+
+    std::remove("record.txt");
+    std::rename("temp.txt", "record.txt");
+
+    if (!found) {
+        std::cout << "Booking for Mobile Number " << mobileNumber << " not found." << std::endl;
+    }
+
+    std::cout << "\nPress Enter Y to return to the main menu: ";
+    std::cin.ignore();
+    std::cin.get();
+
+    M.mainPage();
+}
+
+void booking::cancelBookingByEmail(string emailAddress) {
+    system("cls");
+    bool found = false;
+
+    cout << "***********************************************************************" << endl;
+    cout << "============================CANCEL BOOKING=============================" << endl;
+    cout << "***********************************************************************" << endl;
+
+    ifstream recordIn("record.txt");
+    ofstream tempFile("temp.txt");
+    ofstream cancelFile("cancelbooking.txt", ios::app);
+
+    if (!recordIn || !tempFile || !cancelFile) {
+        cout << "Error opening files." << endl;
+        exit(1);
+    }
+
+    int existingRoomNum, day;
+    string CUSNAME, CHECKIN, MOBILE, EMAIL;
+
+    while (recordIn >> existingRoomNum >> CUSNAME >> CHECKIN >> day >> MOBILE >> EMAIL) {
+        if (EMAIL == emailAddress) {
+            found = true;
+            cout << "\nCustomer Information:\n";
+            cout << "Room Number: " << existingRoomNum << endl;
+            cout << "Customer Name: " << CUSNAME << endl;
+            cout << "Check-In Date: " << CHECKIN << endl;
+            cout << "Number of Days: " << day << endl;
+            cout << "Mobile Number: " << MOBILE << endl;
+            cout << "Email: " << EMAIL << endl;
+
+            cout << "\nDo you want to cancel this booking [Y/N]? ";
+            char confirm;
+            cin >> confirm;
+
+            if (confirm == 'Y' || confirm == 'y') {
+                cancelFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+                cout << "Booking canceled successfully!" << endl;
+            } else {
+                cout << "Booking cancellation aborted." << endl;
+                tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+            }
+        } else {
+            tempFile << existingRoomNum << " " << CUSNAME << " " << CHECKIN << " " << day << " " << MOBILE << " " << EMAIL << endl;
+        }
+    }
+
+    recordIn.close();
+    tempFile.close();
+    cancelFile.close();
+
+    remove("record.txt");
+    rename("temp.txt", "record.txt");
+
+    if (!found) {
+        cout << "Booking for Email Address " << emailAddress << " not found." << endl;
+    }
+
+    cout << "\nPress Enter Y to return to the main menu: ";
+    cin.ignore();
+    cin.get();
+
+    M.mainPage();
+}
+
+		void menu::mainPage()
 		{
 		            system("cls");
 				    cout <<"*******************************************************"<< endl;
@@ -817,13 +1307,15 @@ void Room::feedback() {
 				    cout<<"[8] VIEW OLD RECORD"<<endl;
 				    cout<<"[9] CHANGE STAFF PASSWORD"<<endl;
 				    cout<<"[10] CUSTOMER FEEDBACK"<<endl;
-				    cout<<"[11] EXIT"<<endl;
+				    cout<<"[11] CHECK CURRENT BOOKINGS"<<endl;
+				    cout<<"[12] CANCEL BOOKING"<<endl;
+				    cout<<"[13] EXIT"<<endl;
 				    cout<<"\nEnter your choice: ";
-				    cin>>Ht.choice;
+				    cin>>Ht->choice;
 				    cin.ignore();
-				    switch(Ht.choice)
+				    switch(Ht->choice)
 					{
-					    case 1: R.newBooking();
+					    case 1: bo.newBooking();
 					    	    break;
 					    case 2: system("cls");
 					            cout<<"*************************************************"<<endl;
@@ -850,28 +1342,81 @@ void Room::feedback() {
 						         break;
 						case 10: R.feedback();
 						         break;
-						case 11:
+						case 11: system("cls"); 
+								C.checkCurrentBookings();
+						         break;
+						         
+						case 12: {
+						            int cancelChoice;
+						            system("cls");
+						            cout << "***********************************************************************" << std::endl;
+								    cout << "============================CANCEL BOOKING=============================" << std::endl;
+								    cout << "***********************************************************************" << std::endl;
+						            cout << "How do you want to cancel the booking?" << endl;
+						            cout << "1. By Room Number" << endl;
+						            cout << "2. By Mobile Number" << endl;
+						            cout << "3. By Customer Name" << endl;
+						            cout << "4. By Email Address" << endl;
+						            cout << "Enter your choice: ";
+						            cin >> cancelChoice;
+						
+						            switch (cancelChoice) {
+						                case 1: {
+						                    int roomNumber;
+						                    cout << "Enter Room Number to cancel booking: ";
+						                    cin >> roomNumber;
+						                    bo.cancelBooking(roomNumber);
+						                    break;
+						                }
+						                case 2: {
+						                    long long mobileNumber;
+						                    cout << "Enter Mobile Number to cancel booking: ";
+						                    cin >> mobileNumber;
+						                    bo.cancelBooking(mobileNumber);
+						                    break;
+						                }
+						                case 3: {
+						                    string customerName;
+						                    cout << "Enter Customer Name to cancel booking: ";
+						                    cin.ignore(); 
+						                    getline(cin, customerName);
+						                    bo.cancelBooking(customerName);
+						                    break;
+						                }
+						                  case 4: {
+						                    string emailAddress;
+						                    cout << "Enter Email Address to cancel booking: ";
+						                    cin.ignore(); 
+						                    getline(cin, emailAddress);
+						                    bo.cancelBookingByEmail(emailAddress); 
+						                    break;
+						                	}
+						                default:
+						                    cout << "Invalid choice. Please try again." << endl;
+						                    break;
+						            }
+						            break;
+						        }
+						case 13:
 								 system("cls");
 								 cout << "***********************************************************************" << endl;
 							    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
 							    cout << "***********************************************************************" << endl;
-								 H.logIn();
-								 Ht.password.clear();
-								 H.mainPage();
+								 H.login();
+								 Ht->password.clear();
+								 M.mainPage();
 						         break;
+						         
 					}
 		}
-		int main()
-		{
-			Hotel *H = new Hotel();
-			int choice;
-			system("color 5f");
-			cout << "***********************************************************************" << endl;
-			cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
-			cout << "***********************************************************************" << endl;
-		    H->logIn();
-		    H->mainPage();
-		    delete H;
-			return 0;
-		}
 
+int main() {
+    Hotel* H = new Hotel();
+    system("color 5f");
+    cout << "***********************************************************************" << endl;
+    cout << "==================LOG IN DOCTOR STRANGE HOTEL MANAGEMENT SYSTEM==============" << endl;
+    cout << "***********************************************************************" << endl;
+    H->login();
+    delete H;
+    return 0;
+}
