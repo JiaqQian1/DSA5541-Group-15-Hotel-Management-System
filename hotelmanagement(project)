@@ -78,7 +78,6 @@ public:
 	void displayRecord();
 	void sortBookings();
 	void customerFeedback();
-	void userMenu();
 } C;
 
 class booking:public Hotel{
@@ -334,7 +333,7 @@ void Customer::changeCusPass() {
     }
 }
 
-void Customer::userMenu() {
+void menu::userMenu() {
     int choice;
     system("cls");
     cout <<"*******************************************************"<< endl;
@@ -413,7 +412,7 @@ void Customer::bill() {
         cout << "Customer not found or no booking found for customer." << endl;
     }
 
-    userMenu();
+    M.userMenu();
     
 }
 
@@ -473,7 +472,7 @@ void Customer::searchRecord() {
 
     cout << "\nPress Enter to return to the main menu: ";
     cin.get();
-    userMenu();
+    M.userMenu();
 }
 
 void Customer::displayRecord() {
@@ -503,7 +502,7 @@ void Customer::displayRecord() {
     cout << "\nPress Enter to return to the main menu: ";
     cin.ignore();
     cin.get();
-    userMenu(); // Return to the main menu after displaying records
+    M.userMenu(); // Return to the main menu after displaying records
 }
 
 void Customer::sortBookings() {
@@ -545,7 +544,7 @@ void Customer::sortBookings() {
     cout << "\nPress Enter to return to the main menu: ";
     cin.ignore();
     cin.get();
-    userMenu(); 
+    M.userMenu(); 
 }
 
 void Customer::customerFeedback() {
@@ -569,7 +568,7 @@ void Customer::customerFeedback() {
     cout << "\nPress Enter to return to the main menu: ";
     cin.ignore();
     cin.get();
-    userMenu();
+    M.userMenu();
 }
 void Hotel::login() {
     string staffID;
