@@ -404,22 +404,38 @@ void Customer::bill() {
         }
     }
 
-    record.close();
+    record.close(); 
 
     if (found) {
-        R.calcBill(roomNumber);
+        double roomPrice = 250.0;
+        double totalBill = roomPrice * DAY; 
+
+        cout << "\n=================== BILL ======================" << endl;
+        cout << "Room Number: " << roomNumber << endl;
+        cout << "Customer Name: " << CUSNAME << endl;
+        cout << "Check-In Date: " << CHECKIN << endl;
+        cout << "Number of Days: " << DAY << endl;
+        cout << "Total Payment: " << fixed << setprecision(2) << totalBill << endl;
+        cout << "=================================================" << endl;
     } else {
         cout << "Customer not found or no booking found for customer." << endl;
     }
 
-    M.userMenu();
-    
+    char choice;
+    cout << "\nPress Enter to return to the user menu: "; 
+    cin.get();
+    M.userMenu(); 
 }
+
+    
+
+
 
 void Customer::searchRecord() {
     system("cls");
     cout << "Enter search key: ";
     string searchKey;
+    cin.ignore(); 
     getline(cin, searchKey);
 
     transform(searchKey.begin(), searchKey.end(), searchKey.begin(), ::tolower);
@@ -502,7 +518,7 @@ void Customer::displayRecord() {
     cout << "\nPress Enter to return to the main menu: ";
     cin.ignore();
     cin.get();
-    M.userMenu(); // Return to the main menu after displaying records
+    M.userMenu(); 
 }
 
 void Customer::sortBookings() {
@@ -513,7 +529,7 @@ void Customer::sortBookings() {
         return;
     }
 
-    vector<pair<int, string> > bookings; // Store room number and customer name
+    vector<pair<int, string> > bookings; 
     int existingRoomNum, DAY;
     string CUSNAME, CHECKIN, MOBILE, EMAIL;
 
@@ -552,6 +568,7 @@ void Customer::customerFeedback() {
     string feedback;
 
     cout << "Enter your feedback:\n";
+     cin.ignore(); 
     getline(cin, feedback);
 
     ofstream feedbackFile("feedback.txt", ios::app);
@@ -566,7 +583,6 @@ void Customer::customerFeedback() {
     cout << "\nThank you for your feedback!" << endl;
 
     cout << "\nPress Enter to return to the main menu: ";
-    cin.ignore();
     cin.get();
     M.userMenu();
 }
