@@ -2197,13 +2197,12 @@ void Room::binarySearch(string searchKey, int option) {
 						            M.searchMenu();
 						            break;
 						        	
-						case 15:
-								 H.determineUserType();
-						         break;
-						default:
-							            cout << "Invalid choice. Please try again." << endl;
-							        break;
-						         
+						case 15:system("cls");
+							H.determineUserType();
+						        break;
+								 
+						default:cout << "Invalid choice. Please try again." << endl;
+							    break;
 					}
 		}
 
